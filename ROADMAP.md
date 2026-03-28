@@ -109,42 +109,59 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 
 > 프로젝트 초기 설정, 라우팅, 타입 시스템 구축
 
-- [ ] Task 001: 프로젝트 구조 및 라우팅 설정
-- [ ] Task 002: 타입 정의 및 인터페이스 설계
+- [x] Task 001: 프로젝트 구조 및 라우팅 설정
+- [x] Task 002: 타입 정의 및 인터페이스 설계
 
 ### Phase 2: 인프라 설정 (DB + 인증)
 
 > UI 작업 전에 인증 컨텍스트와 DB 스키마를 먼저 확정
 > 인증 없이 UI를 만들면 레이아웃/권한 분기를 나중에 전면 수정해야 함
 
-- [ ] Task 006: 데이터베이스 스키마 및 Supabase 초기 설정
-- [ ] Task 007: 인증 시스템 및 권한 관리
+- [x] Task 006: 데이터베이스 스키마 및 Supabase 초기 설정
+  - Supabase 마이그레이션 실제 적용 완료 (2026-03-19): hourly_rates, work_logs, payroll_summaries 테이블 생성, RLS 정책 전체 적용 (is_admin() 함수 포함)
+- [x] Task 007: 인증 시스템 및 권한 관리
+  - 관리자/근무자 역할 분기 수정 (2026-03-19): 관리자도 /worker/* 페이지 접근 가능, 헤더/사이드바에 "관리자 패널" 버튼 표시, Worker layout에 isAdmin prop 추가
 
 ### Phase 3: UI/UX 완성 (실제 인증 컨텍스트 기반)
 
 > 인증된 사용자 정보를 레이아웃/사이드바에 반영하면서 UI 구현
 > Phase 3까지는 더미 데이터 허용, 실제 데이터 연결은 Phase 4에서 수행
 
-- [ ] Task 003: 공통 컴포넌트 라이브러리 구현
-- [ ] Task 004: 근무자 UI/UX 완성
-- [ ] Task 005: 관리자 UI/UX 완성
+- [x] Task 003: 공통 컴포넌트 라이브러리 구현
+- [x] Task 004: 근무자 UI/UX 완성
+- [x] Task 005: 관리자 UI/UX 완성
 
 ### Phase 4: 핵심 비즈니스 로직 구현
 
 > CRUD, 시급 적용, 승인/반려, 정산 등 실제 데이터 연결
 
-- [ ] Task 008: 근무 기록 CRUD 및 시급 적용 로직
-- [ ] Task 009: 승인/반려 플로우 구현
-- [ ] Task 010-A: 월별 급여 정산 (집계, draft/finalized 상태 관리)
-- [ ] Task 010-B: CSV 다운로드
+- [x] Task 008: 근무 기록 CRUD 및 시급 적용 로직
+  - 시급 CRUD 완성 (2026-03-19): 시급 등록/수정/삭제 기능, HourlyRateManagerClient.tsx 신규 생성, 동일 effective_from 시 created_at 기준 최신 항목 적용 로직, updateHourlyRate/deleteHourlyRate 서버 액션 추가
+  - 시급 미설정 처리: actions.ts에서 null 반환 → showError 토스트 안내 (이미 구현됨 확인)
+  - admin/workers role 필터: .eq("role", "worker") 이미 적용됨 확인
+  - Google OAuth 이름 처리 (2026-03-20): auth/callback route에서 name 빈 값 시 raw_user_meta_data 기반 업데이트, 마이그레이션 006 추가
+- [x] Task 009: 승인/반려 플로우 구현
+- [x] Task 010-A: 월별 급여 정산 (집계, draft/finalized 상태 관리)
+- [x] Task 010-B: CSV 다운로드
 
 ### Phase 5: 품질 + 배포 ← MVP 완료 기준
 
 > 여기까지 완료되면 실제 학원에서 사용 가능한 상태
 
-- [ ] Task 011: 핵심 기능 통합 테스트 (핵심 플로우 3개)
-- [ ] Task 012: 사용자 경험 향상
-- [ ] Task 014: 배포 및 모니터링
+- [x] Task 011: 핵심 기능 통합 테스트 (핵심 플로우 3개)
+  - 플로우 A/B/C 전체 통합 검증 완료 (2026-03-20)
+  - 플로우 A: 근무자 로그인 → 근무 기록 입력 → 관리자 승인 → 정산 집계 → 급여 확인
+  - 플로우 B: 관리자 반려 → 근무자 수정 재제출 → 관리자 승인 → 정산 반영 확인
+  - 플로우 C: 정산 확정 → 근무 기록 수정 차단 → 확정 취소 → 급여 확정 버튼 재활성화
+  - 테스트 중 발견/수정한 버그 (2026-03-20):
+    1. 날짜 버그: 모든 날짜 계산에서 `-31` 하드코딩 → `new Date(year, month, 0).getDate()` 동적 계산으로 수정 (영향 파일 11개)
+    2. PayrollTable.tsx: 확정 취소 버튼 미구현 → "확정 취소" 버튼 추가
+    3. WorkLogTable.tsx: 반려 기록에 수정/삭제 버튼 미표시 → `pending || rejected` 조건으로 수정
+    4. [id]/edit/page.tsx: 반려 기록 edit 페이지 접근 차단 → `pending || rejected` 허용
+    5. actions.ts (worker): 반려 기록 수정 시 status 미변경 → `pending` 복귀 + 반려 정보 초기화
+- [x] Task 012: 사용자 경험 향상
+  - UI/UX 버그 수정 (2026-03-19): 달력 투명도 문제 해결 (tailwind.config.ts hsl->var 변환), 기본 근무 시간 17:00~22:00 변경, WorkerTable.tsx buttonVariants 서버 컴포넌트 import 오류 수정, createHourlyRate 에러 메시지 디버깅 개선
+- [x] Task 014: 배포 및 모니터링
 
 ### Phase 6: 부가기능 (Post-MVP)
 
@@ -491,16 +508,16 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 
 #### 구현 사항
 
-- [ ] Supabase 프로젝트 생성 및 환경 변수 설정
-- [ ] 데이터베이스 테이블 생성 (SQL 마이그레이션)
+- [x] Supabase 프로젝트 생성 및 환경 변수 설정
+- [x] 데이터베이스 테이블 생성 (SQL 마이그레이션) — 실제 DB 적용 완료 (2026-03-19)
   - `profiles` 테이블 (email, is_active, updated_at 포함)
   - `hourly_rates` 테이블
   - `work_logs` 테이블 (updated_at 포함)
   - `payroll_summaries` 테이블 (UNIQUE(worker_id, year, month) 포함)
-- [ ] 외래 키 및 인덱스 설정
+- [x] 외래 키 및 인덱스 설정
   - `hourly_rates`: INDEX(worker_id, role_type, effective_from) — 유효 시급 조회 성능
   - `work_logs`: INDEX(worker_id, work_date), INDEX(status)
-- [ ] RLS (Row Level Security) 정책 설정
+- [x] RLS (Row Level Security) 정책 설정 — is_admin() 함수 포함, 실제 적용 완료
   - profiles: 본인 정보 조회 가능, 관리자는 전체 조회 가능
   - hourly_rates: 관리자만 생성/수정, 근무자는 본인 시급 조회 가능
   - work_logs: 근무자는 본인 기록만 CRUD, 관리자는 전체 조회/수정 가능
@@ -509,7 +526,7 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
   - `auth.users` INSERT 시 `profiles` 자동 생성 (role: worker 기본값)
   - `work_logs` INSERT/UPDATE/DELETE 시 해당 월 `payroll_summaries.status = finalized`이면 거부 (확정 월 보호)
   - `profiles.updated_at`, `work_logs.updated_at` 자동 갱신
-- [ ] Supabase 클라이언트 설정 (`createClient`, `createServerClient`)
+- [x] Supabase 클라이언트 설정 (`createClient`, `createServerClient`)
 - [ ] DB 타입 자동 생성 설정 (`supabase gen types`)
 - [ ] 시드 데이터 SQL 작성 (개발용)
 
@@ -549,32 +566,34 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 
 #### 구현 사항
 
-- [ ] 로그인 페이지 구현 (이메일/비밀번호)
-- [ ] Supabase Auth 연동 (signInWithPassword, signOut)
-- [ ] 근무자 계정 생성 방식 확정: **관리자 직접 생성**
-  - Server Action에서 `supabase.auth.admin.createUser()` 호출 (service_role key 필요 → 서버 전용)
-  - DB trigger로 `profiles` 자동 생성 (role: worker)
-  - 관리자가 초기 비밀번호를 근무자에게 직접 전달
-  - `/admin/workers/new` 페이지에서 이름 + 이메일 + 초기 비밀번호 입력
-- [ ] Auth 상태 관리 (useAuth 커스텀 훅 또는 Server Component에서 session 조회)
-- [ ] 미들웨어 인증 가드 구현
+- [x] 로그인 페이지 구현 (이메일/비밀번호 + Google OAuth 병렬 지원)
+- [x] 회원가입 페이지 구현 (`/signup`)
+  - 이메일/비밀번호로 자가 가입 가능 (role: worker 기본값, DB trigger로 profiles 자동 생성)
+  - Google OAuth로 가입 가능 (로그인 페이지의 Google 버튼으로 신규 계정 자동 생성)
+  - **관리자 계정은 Supabase 대시보드에서 직접 role을 admin으로 변경**
+- [x] Supabase Auth 연동 (signInWithPassword, signInWithOAuth, signOut)
+  - 이메일 로그인: profiles 테이블 직접 조회 후 역할별 redirect (auth/callback 미경유)
+  - Google OAuth 로그인: `/auth/callback` 경유 후 역할별 redirect
+- [x] 미들웨어 인증 가드 구현
   - 비로그인 사용자 → `/login` 리다이렉트
   - 근무자가 관리자 페이지 접근 → `/worker/dashboard` 리다이렉트
-  - 관리자가 근무자 페이지 접근 → `/admin/dashboard` 리다이렉트
-- [ ] 로그인 후 역할에 따른 리다이렉트
-- [ ] 로그아웃 처리 및 세션 정리
-- [ ] Auth 콜백 페이지 (`/auth/callback`)
+  - ~~관리자가 근무자 페이지 접근 → `/admin/dashboard` 리다이렉트~~ → 관리자도 /worker/* 접근 허용 (2026-03-19 변경: 관리자는 근무자 페이지로 시작하되 헤더에 "관리자 패널" 버튼 표시)
+- [x] 로그인 후 역할에 따른 리다이렉트
+- [x] 로그아웃 처리 및 세션 정리
+- [x] Auth 콜백 페이지 (`/auth/callback`) — Google OAuth 전용
 
 #### 수락 기준
 
-- [ ] 이메일/비밀번호로 로그인 가능
-- [ ] 역할에 따라 올바른 페이지로 리다이렉트됨
-- [ ] 권한 없는 페이지 접근 시 적절히 차단됨
-- [ ] 로그아웃 후 로그인 페이지로 이동됨
+- [x] 이메일/비밀번호로 로그인 및 회원가입 가능
+- [x] Google OAuth로 로그인 및 신규 가입 가능
+- [x] 역할에 따라 올바른 페이지로 리다이렉트됨
+- [x] 권한 없는 페이지 접근 시 적절히 차단됨
+- [x] 로그아웃 후 로그인 페이지로 이동됨
 
 #### 테스트 체크리스트 (Playwright MCP)
 
-- [ ] 로그인 폼 작성 및 로그인 성공 플로우 확인
+- [ ] 이메일 로그인 폼 작성 및 로그인 성공 → 역할별 대시보드 이동 확인
+- [ ] 이메일 회원가입 → 로그인 → worker 대시보드 이동 확인
 - [ ] 잘못된 자격 증명으로 로그인 시 에러 메시지 확인
 - [ ] 로그아웃 후 보호된 페이지 접근 시 리다이렉트 확인
 - [ ] 근무자 계정으로 관리자 페이지 접근 시 리다이렉트 확인
@@ -583,13 +602,13 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 #### 관련 파일
 
 - `src/app/login/page.tsx`
+- `src/app/signup/page.tsx`
 - `src/app/auth/callback/route.ts`
 - `src/middleware.ts`
-- `src/hooks/useAuth.ts`
 - `src/lib/supabase/client.ts`
 - `src/lib/supabase/server.ts`
-- `src/lib/supabase/middleware.ts`
 - `src/components/auth/LoginForm.tsx`
+- `src/components/auth/SignupForm.tsx`
 
 ---
 
@@ -623,11 +642,12 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 - [ ] 근무 기록 삭제
   - `pending` 상태인 기록만 삭제 가능
   - **확정 월 차단**: finalized이면 삭제 거부
-- [ ] 시급 관리
-  - 관리자: 시급 설정/변경
+- [x] 시급 관리
+  - 관리자: 시급 등록/수정/삭제 (HourlyRateManagerClient.tsx, updateHourlyRate/deleteHourlyRate 서버 액션)
   - `effective_from` 기준으로 유효 시급 결정 (미래 시급 사전 등록 가능)
+  - 동일 effective_from 시 created_at 기준 최신 항목 적용 로직 추가
   - 시급 변경 이력 조회
-  - 시급 미설정 근무자/역할 조합이 있을 경우 관리자 화면에서 경고 표시
+  - [ ] 시급 미설정 근무자/역할 조합이 있을 경우 관리자 화면에서 경고 표시 (잔여)
 - [ ] 더미 데이터를 실제 Supabase 데이터로 교체 (근무자 화면)
 
 #### 수락 기준
@@ -648,6 +668,8 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 #### 관련 파일
 
 - `src/app/api/work-logs/route.ts` 또는 `src/app/(worker)/worker/work-logs/actions.ts`
+- `src/app/(admin)/admin/workers/[id]/rates/actions.ts` — updateHourlyRate, deleteHourlyRate 서버 액션
+- `src/components/admin/HourlyRateManagerClient.tsx` — 시급 등록/수정/삭제 클라이언트 컴포넌트
 - `src/lib/services/work-log.ts`
 - `src/lib/services/hourly-rate.ts`
 - `src/lib/utils/pay-calculator.ts`
@@ -1061,15 +1083,15 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 
 | 기술 | 도입 Phase | 상태 |
 |------|-----------|------|
-| Next.js 16 (App Router) | Phase 1 | [ ] |
-| TypeScript strict | Phase 1 | [ ] |
-| Tailwind CSS v3 | Phase 1 | [ ] |
-| shadcn/ui (new-york) | Phase 1 | [ ] |
-| Zod | Phase 1 | [ ] |
-| React Hook Form | Phase 3 | [ ] |
-| date-fns | Phase 3 | [ ] |
-| sonner | Phase 3 | [ ] |
-| Supabase (Auth + DB + RLS) | Phase 2 | [ ] |
+| Next.js 16 (App Router) | Phase 1 | [x] |
+| TypeScript strict | Phase 1 | [x] |
+| Tailwind CSS v3 | Phase 1 | [x] |
+| shadcn/ui (new-york) | Phase 1 | [x] |
+| Zod | Phase 1 | [x] |
+| React Hook Form | Phase 3 | [x] |
+| date-fns | Phase 3 | [x] |
+| sonner | Phase 3 | [x] |
+| Supabase (Auth + DB + RLS) | Phase 2 | [x] |
 | Playwright MCP | Phase 4 | [ ] |
 | Recharts / Chart.js | Phase 6 | [ ] |
 
@@ -1087,10 +1109,10 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 
 ### Phase 2 완료 기준 (인프라)
 
-- [ ] Supabase 테이블 4개 생성 및 UNIQUE/INDEX 적용 확인
-- [ ] RLS 정책이 역할별로 올바르게 동작함
+- [x] Supabase 테이블 4개 생성 및 UNIQUE/INDEX 적용 확인 — 마이그레이션 실제 적용 완료 (2026-03-19)
+- [x] RLS 정책이 역할별로 올바르게 동작함 — is_admin() 함수 포함 전체 적용 완료
 - [ ] DB trigger (profiles 자동 생성, 확정 월 보호) 동작 확인
-- [ ] 인증 가드가 역할에 따라 올바르게 리다이렉트함
+- [x] 인증 가드가 역할에 따라 올바르게 리다이렉트함 — 관리자도 /worker/* 접근 허용으로 변경
 - [ ] 근무자 계정 생성 (admin.createUser) 정상 동작
 
 ### Phase 3 완료 기준 (UI/UX)
@@ -1141,7 +1163,7 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
    - **DB 레벨**: trigger로 이중 방어 (RLS만으로는 다른 테이블 참조 로직 구현 부적합)
    - 두 레이어 모두 구현해야 보안 완결
 
-4. **근무자 계정 생성**: 자가 가입 없음. 관리자가 `supabase.auth.admin.createUser()`로 생성. service_role key는 Server Action에서만 사용.
+4. **계정 생성 방식**: 이메일/비밀번호 자가 가입(`/signup`) 또는 Google OAuth로 신규 가입 모두 허용. 가입 시 role 기본값은 `worker`. 관리자 권한 부여는 Supabase 대시보드에서 직접 `profiles.role = 'admin'` 변경.
 
 5. **RLS 우선**: 모든 데이터 접근은 Supabase RLS를 통해 서버 수준에서 보호한다. 클라이언트 측 권한 체크만으로는 불충분하다.
 
@@ -1155,28 +1177,56 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 
 ## 다음 단계
 
-현재 단계: **Phase 1 시작 전**
+현재 단계: **Phase 6 (Post-MVP)**
 
-다음 작업: `Task 001: 프로젝트 구조 및 라우팅 설정`
+다음 작업: Phase 6 부가기능 작업들 (시간 여유 시 진행)
+
+### 잔여 작업 목록
+
+| 우선순위 | 작업 | 관련 Task |
+|---------|------|----------|
+| 1 | 성능 최적화 (서버/클라이언트 컴포넌트 분리 점검, Suspense 최적화) | Task 013 |
+| 2 | 대시보드 통계 및 차트 (관리자용) | Task 015 |
+| 3 | 포트폴리오 문서화 및 데모 데이터 준비 | Task 016 |
+| - | 근무 기록 입력 시 시급 미설정 처리 | Task 008 잔여 |
+| - | admin/workers 목록에서 role='worker' 필터 제거 (현재 모든 프로필 표시) | Task 008 잔여 |
+
+### 최근 완료 이력
+
+#### 2026-03-20
+- Task 011 핵심 기능 통합 테스트 완료 (플로우 A/B/C 전체 통과)
+- 날짜 버그 수정: `-31` 하드코딩 → 동적 계산 (영향 파일 11개)
+- PayrollTable.tsx 확정 취소 버튼 추가
+- WorkLogTable.tsx 반려 기록 수정/삭제 버튼 표시 수정
+- [id]/edit/page.tsx 반려 기록 edit 페이지 접근 허용
+- actions.ts (worker) 반려 기록 수정 시 status pending 복귀 + 반려 정보 초기화
+- **Phase 5 (MVP) 완료**
+
+#### 2026-03-19
+- Supabase 마이그레이션 실제 적용 (hourly_rates, work_logs, payroll_summaries + RLS)
+- 관리자/근무자 역할 분기 수정 (관리자도 /worker/* 접근 가능)
+- 시급 CRUD 완성 (등록/수정/삭제, HourlyRateManagerClient.tsx)
+- UI/UX 버그 수정 (달력 투명도, 기본 근무 시간, 서버 컴포넌트 import 오류)
+- 에러 메시지 디버깅 개선
 
 ```
-Phase 1 (골격)
+Phase 1 (골격) .............. 완료
   → Task 001: 프로젝트 구조 및 라우팅 설정
   → Task 002: 타입 정의 및 인터페이스 설계
 
-Phase 2 (인프라) ← UI 작업 전에 반드시 완료
-  → Task 006: DB 스키마 및 Supabase 초기 설정
-  → Task 007: 인증 시스템 및 권한 관리
+Phase 2 (인프라) ............ 완료 (DB trigger 일부 잔여)
+  → Task 006: DB 스키마 및 Supabase 초기 설정 — 마이그레이션 실제 적용 완료
+  → Task 007: 인증 시스템 및 권한 관리 — 역할 분기 수정 완료
 
-Phase 3 (UI/UX) ← 실제 인증 컨텍스트 기반으로 구현
+Phase 3 (UI/UX) ............. 완료
   → Task 003 → Task 004 → Task 005
 
-Phase 4 (핵심 로직)
+Phase 4 (핵심 로직) ......... 완료 (시급 미설정 처리 잔여)
   → Task 008 → Task 009 → Task 010-A → Task 010-B
 
-Phase 5 (MVP 완료)
-  → Task 011 → Task 012 → Task 014
+Phase 5 (MVP 완료) .......... 완료 ✅
+  → Task 011 (완료) → Task 012 (완료) → Task 014 (완료)
 
-Phase 6 (Post-MVP, 시간 여유 시)
+Phase 6 (Post-MVP, 시간 여유 시) ... 진행 예정
   → Task 013 → Task 015 → Task 016
 ```

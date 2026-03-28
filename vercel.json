@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "functions": {
+    "src/app/**": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "TZ": "Asia/Seoul"
+  }
+}

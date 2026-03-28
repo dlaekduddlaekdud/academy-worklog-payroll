@@ -1,0 +1,33 @@
+// GET /api/notion/schedule?year=2026&month=3
+// 서버 사이드에서 Notion API 호출 — NOTION_TOKEN 클라이언트 노출 방지
+
+import { NextRequest, NextResponse } from "next/server"
+import { getMonthlySchedule } from "@/lib/services/notion"
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl
+
+  const yearParam = searchParams.get("year")
+  const monthParam = searchParams.get("month")
+
+  if (!yearParam || !monthParam) {
+    return NextResponse.json(
+      { error: "year, month 파라미터가 필요합니다" },
+      { status: 400 }
+    )
+  }
+
+  const year = parseInt(yearParam, 10)
+  const month = parseInt(monthParam, 10)
+
+  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+    return NextResponse.json(
+      { error: "유효하지 않은 year 또는 month 값입니다" },
+      { status: 400 }
+    )
+  }
+
+  const entries = await getMonthlySchedule(year, month)
+
+  return NextResponse.json({ entries })
+}
