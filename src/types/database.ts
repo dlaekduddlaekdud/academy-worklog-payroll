@@ -164,8 +164,16 @@ export interface Database {
     };
 
     Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
+    Functions: {
+      finalize_payroll: {
+        Args: {
+          p_worker_id: string;
+          p_year: number;
+          p_month: number;
+        };
+        Returns: undefined;
+      };
+    };    Enums: Record<string, never>;
   };
 }
 
