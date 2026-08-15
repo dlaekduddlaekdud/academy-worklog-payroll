@@ -9,7 +9,6 @@ import {
   calculatePay,
 } from "@/lib/utils/pay-calculator";
 import type { WorkLogFormValues } from "@/lib/validations/work-log";
-import { upsertPayrollSummary } from "@/lib/services/payroll";
 import type { WorkLog, WorkLogFilter, WorkLogMonthlySummary, WorkLogRow } from "@/types";
 
 export interface ActionResult {
@@ -139,7 +138,7 @@ export async function createWorkLog(
   }
 }
 
-// 근무 기록 수정 (모든 상태 허용, approved는 시급 재계산 후 approved 유지)
+// 근무 기록 수정 (pending/rejected만 가능, 수정 시 pending으로 복귀)
 export async function updateWorkLog(
   id: string,
   data: WorkLogFormValues
@@ -153,10 +152,9 @@ export async function updateWorkLog(
 
     const userId = user.id;
 
-    // 기존 기록 조회 — 본인 것인지 확인, approved 처리를 위해 review 필드도 조회
     const { data: existing, error: fetchError } = await supabase
       .from("work_logs")
-      .select("status, worker_id, work_date, reviewed_at, reviewed_by")
+      .select("status, worker_id, work_date")
       .eq("id", id)
       .single();
 
@@ -167,6 +165,18 @@ export async function updateWorkLog(
     if (existing.worker_id !== userId) {
       return { success: false, error: "본인의 근무 기록만 수정할 수 있습니다." };
     }
+
+    // 승인된 기록은 수정 불가 — 승인의 의미를 지키기 위해 관리자의 승인 취소를 거친다
+    if (existing.status === "approved") {
+      return {
+        success: false,
+        error: "승인된 기록은 수정할 수 없습니다. 관리자에게 승인 취소를 요청하세요.",
+      };
+    }
+
+    // 확정 월 보호 — 날짜를 다른 달로 옮기는 경우 양쪽 월 모두 검사
+    await assertNotFinalized(supabase, userId, existing.work_date);
+    await assertNotFinalized(supabase, userId, data.workDate);
 
     // 시급 재계산 (변경된 날짜/역할 기준)
     const rate = await getEffectiveHourlyRate(
@@ -185,11 +195,7 @@ export async function updateWorkLog(
     const durationHours = calculateDurationHours(data.startTime, data.endTime);
     const calculatedPay = calculatePay(durationHours, rate);
 
-    // approved 기록은 approved 유지, 그 외(pending/rejected)는 pending으로 복귀
-    const isApproved = existing.status === "approved";
-    const newStatus = isApproved ? "approved" : "pending";
-
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("work_logs")
       .update({
         work_date: data.workDate,
@@ -200,26 +206,25 @@ export async function updateWorkLog(
         memo: data.memo ?? null,
         applied_hourly_rate: rate,
         calculated_pay: calculatedPay,
-        // pending/rejected는 재검토를 위해 pending으로 복귀
-        status: newStatus,
-        reviewed_at: isApproved ? existing.reviewed_at ?? null : null,
-        reviewed_by: isApproved ? existing.reviewed_by ?? null : null,
+        // 수정된 기록은 재검토 대상이므로 pending으로 복귀하고 심사 흔적을 지운다
+        status: "pending",
+        reviewed_at: null,
+        reviewed_by: null,
         rejection_reason: null,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", id);
+      .eq("id", id)
+      .select("id");
 
     if (error) return { success: false, error: "근무 기록 수정에 실패했습니다." };
 
-    // approved 기록 수정 시 정산 자동 갱신
-    if (isApproved) {
-      const workDate = new Date(data.workDate);
-      await upsertPayrollSummary(
-        supabase,
-        userId,
-        workDate.getFullYear(),
-        workDate.getMonth() + 1
-      );
+    // RLS가 막으면 supabase는 에러 없이 0행을 반환한다.
+    // 이 검사가 없으면 아무것도 저장되지 않은 채 "수정 완료"가 표시된다.
+    if (!updated || updated.length === 0) {
+      return {
+        success: false,
+        error: "수정 권한이 없거나 이미 처리된 기록입니다.",
+      };
     }
 
     revalidatePath("/worker/work-logs");
@@ -232,58 +237,6 @@ export async function updateWorkLog(
   }
 }
 
-// 근무 기록 삭제 (모든 상태 허용, approved 기록 삭제 시 정산 자동 갱신)
-export async function deleteWorkLog(id: string): Promise<ActionResult> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) redirect("/login");
-
-    const userId = user.id;
-
-    // 기존 기록 확인
-    const { data: existing, error: fetchError } = await supabase
-      .from("work_logs")
-      .select("status, worker_id, work_date")
-      .eq("id", id)
-      .single();
-
-    if (fetchError || !existing) {
-      return { success: false, error: "근무 기록을 찾을 수 없습니다." };
-    }
-
-    if (existing.worker_id !== userId) {
-      return { success: false, error: "본인의 근무 기록만 삭제할 수 있습니다." };
-    }
-
-    const isApproved = existing.status === "approved";
-
-    const { error } = await supabase.from("work_logs").delete().eq("id", id);
-
-    if (error) return { success: false, error: "근무 기록 삭제에 실패했습니다." };
-
-    // approved 기록 삭제 시 정산 자동 갱신
-    if (isApproved) {
-      const workDate = new Date(existing.work_date);
-      await upsertPayrollSummary(
-        supabase,
-        userId,
-        workDate.getFullYear(),
-        workDate.getMonth() + 1
-      );
-    }
-
-    revalidatePath("/worker/work-logs");
-    revalidatePath("/worker/dashboard");
-    return { success: true };
-  } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
-    return { success: false, error: message };
-  }
-}
 
 // 근무자 본인의 근무 기록 목록 조회
 export async function getMyWorkLogs(filter: WorkLogFilter): Promise<WorkLog[]> {
@@ -315,6 +268,64 @@ export async function getMyWorkLogs(filter: WorkLogFilter): Promise<WorkLog[]> {
   const { data, error } = await query;
   if (error || !data) return [];
   return (data as WorkLogRow[]).map(toWorkLog);
+}
+// 근무 기록 삭제 (pending/rejected만 가능)
+export async function deleteWorkLog(id: string): Promise<ActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) redirect("/login");
+
+    const userId = user.id;
+
+    const { data: existing, error: fetchError } = await supabase
+      .from("work_logs")
+      .select("status, worker_id, work_date")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !existing) {
+      return { success: false, error: "근무 기록을 찾을 수 없습니다." };
+    }
+
+    if (existing.worker_id !== userId) {
+      return { success: false, error: "본인의 근무 기록만 삭제할 수 있습니다." };
+    }
+
+    if (existing.status === "approved") {
+      return {
+        success: false,
+        error: "승인된 기록은 삭제할 수 없습니다. 관리자에게 승인 취소를 요청하세요.",
+      };
+    }
+
+    await assertNotFinalized(supabase, userId, existing.work_date);
+
+    const { data: deleted, error } = await supabase
+      .from("work_logs")
+      .delete()
+      .eq("id", id)
+      .select("id");
+
+    if (error) return { success: false, error: "근무 기록 삭제에 실패했습니다." };
+
+    if (!deleted || deleted.length === 0) {
+      return {
+        success: false,
+        error: "삭제 권한이 없거나 이미 처리된 기록입니다.",
+      };
+    }
+
+    revalidatePath("/worker/work-logs");
+    revalidatePath("/worker/dashboard");
+    return { success: true };
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    return { success: false, error: message };
+  }
 }
 
 // 이번 달 근무 기록 요약 조회
