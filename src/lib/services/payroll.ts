@@ -53,7 +53,10 @@ export async function upsertPayrollSummary(
     0
   );
 
-  // UPSERT — 이미 finalized인 경우 status는 유지, 집계값만 갱신
+// UPSERT — 집계값만 갱신한다.
+  // status를 함께 넣으면 finalized 요약이 draft로 뒤집히면서
+  // finalized_at/finalized_by만 남는 모순 데이터가 생긴다.
+  // 신규 행의 status는 DB 기본값(draft), 확정은 finalizePayroll이 전담한다.
   const { data, error } = await supabase
     .from("payroll_summaries")
     .upsert(
@@ -63,15 +66,9 @@ export async function upsertPayrollSummary(
         month,
         total_hours: totalHours,
         total_pay: totalPay,
-        status: "draft",
         updated_at: new Date().toISOString(),
       },
-      {
-        onConflict: "worker_id,year,month",
-        // finalized 상태인 경우 status를 draft로 되돌리지 않으려면
-        // 아래 ignoreDuplicates 대신 별도 쿼리가 필요하지만,
-        // calculatePayroll에서 finalized 여부를 먼저 체크하므로 여기서는 단순 upsert
-      }
+      { onConflict: "worker_id,year,month" }
     )
     .select()
     .single();
