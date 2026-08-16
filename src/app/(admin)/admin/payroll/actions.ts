@@ -42,7 +42,7 @@ export async function calculatePayroll(
     const supabase = await createClient();
     await getAdminUserId(supabase);
 
-    // 이미 확정된 월은 재집계 불가 (status를 draft로 덮어쓰지 않도록 사전 차단)
+    // 이미 확정된 월은 재집계 불가
     const { data: existing } = await supabase
       .from("payroll_summaries")
       .select("status")
@@ -66,7 +66,7 @@ export async function calculatePayroll(
   }
 }
 
-// 정산 확정 (draft → finalized)
+// 정산 확정 — 검사·집계·확정을 단일 트랜잭션으로 처리 (migration 009)
 export async function finalizePayroll(
   workerId: string,
   year: number,
@@ -74,45 +74,21 @@ export async function finalizePayroll(
 ): Promise<ActionResult> {
   try {
     const supabase = await createClient();
-    const adminId = await getAdminUserId(supabase);
+    await getAdminUserId(supabase);
 
-    // 대기 중인 근무 기록이 있으면 확정 불가
-    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-    const lastDay = new Date(year, month, 0).getDate();
-    const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    const { error } = await supabase.rpc("finalize_payroll", {
+      p_worker_id: workerId,
+      p_year: year,
+      p_month: month,
+    });
 
-
-    const { data: pendingLogs } = await supabase
-      .from("work_logs")
-      .select("id")
-      .eq("worker_id", workerId)
-      .eq("status", "pending")
-      .gte("work_date", startDate)
-      .lte("work_date", endDate);
-
-    if (pendingLogs && pendingLogs.length > 0) {
+    // 함수가 RAISE EXCEPTION으로 던진 사유(대기 기록 존재 등)를 그대로 전달한다
+    if (error) {
       return {
         success: false,
-        error: `대기 중인 근무 기록 ${pendingLogs.length}건이 있습니다. 모두 처리 후 확정해주세요.`,
+        error: error.message || "정산 확정에 실패했습니다.",
       };
     }
-
-    // 정산 집계 후 finalized로 변경
-    await upsertPayrollSummary(supabase, workerId, year, month);
-
-    const { error } = await supabase
-      .from("payroll_summaries")
-      .update({
-        status: "finalized",
-        finalized_at: new Date().toISOString(),
-        finalized_by: adminId,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("worker_id", workerId)
-      .eq("year", year)
-      .eq("month", month);
-
-    if (error) return { success: false, error: "정산 확정에 실패했습니다." };
 
     revalidatePath("/admin/payroll");
     revalidatePath("/worker/payroll");
@@ -124,7 +100,9 @@ export async function finalizePayroll(
   }
 }
 
-// 일괄 확정
+// 일괄 확정 — 근무자별로 RPC를 호출한다.
+// 한 근무자의 실패가 나머지를 막지 않아야 한다는 요구사항이므로,
+// 전체를 하나의 트랜잭션으로 묶지 않고 개별 트랜잭션을 반복한다.
 export async function bulkFinalizePayroll(
   workerIds: string[],
   year: number,
@@ -132,59 +110,43 @@ export async function bulkFinalizePayroll(
 ): Promise<ActionResult> {
   try {
     const supabase = await createClient();
-    const adminId = await getAdminUserId(supabase);
+    await getAdminUserId(supabase);
 
-    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-    const endDate = new Date(year, month, 0).toISOString().split("T")[0];
-
-    // 각 근무자별 pending 체크 + 집계
-    const failedIds: string[] = [];
-    const successIds: string[] = [];
+    let successCount = 0;
+    const failed: string[] = [];
 
     for (const workerId of workerIds) {
-      // pending 기록이 있으면 해당 근무자는 건너뜀
-      const { data: pendingLogs } = await supabase
-        .from("work_logs")
-        .select("id")
-        .eq("worker_id", workerId)
-        .eq("status", "pending")
-        .gte("work_date", startDate)
-        .lte("work_date", endDate);
+      const { error } = await supabase.rpc("finalize_payroll", {
+        p_worker_id: workerId,
+        p_year: year,
+        p_month: month,
+      });
 
-      if (pendingLogs && pendingLogs.length > 0) {
-        failedIds.push(workerId);
-        continue;
-      }
-
-      try {
-        await upsertPayrollSummary(supabase, workerId, year, month);
-        successIds.push(workerId);
-      } catch {
-        failedIds.push(workerId);
+      if (error) {
+        failed.push(workerId);
+      } else {
+        successCount += 1;
       }
     }
 
-    if (successIds.length === 0) {
-      return { success: false, error: "확정 가능한 근무자가 없습니다. 대기 중인 기록을 먼저 처리해주세요." };
+    if (successCount === 0) {
+      return {
+        success: false,
+        error:
+          "확정 가능한 근무자가 없습니다. 대기 중인 기록을 먼저 처리해주세요.",
+      };
     }
-
-    // 집계에 성공한 근무자만 finalized 처리
-    const { error } = await supabase
-      .from("payroll_summaries")
-      .update({
-        status: "finalized",
-        finalized_at: new Date().toISOString(),
-        finalized_by: adminId,
-        updated_at: new Date().toISOString(),
-      })
-      .in("worker_id", successIds)
-      .eq("year", year)
-      .eq("month", month);
-
-    if (error) return { success: false, error: "일괄 확정에 실패했습니다." };
 
     revalidatePath("/admin/payroll");
     revalidatePath("/worker/payroll");
+
+    if (failed.length > 0) {
+      return {
+        success: true,
+        error: `${successCount}명 확정 완료, ${failed.length}명은 대기 중인 기록이 있어 건너뛰었습니다.`,
+      };
+    }
+
     return { success: true };
   } catch (e) {
     const message =
