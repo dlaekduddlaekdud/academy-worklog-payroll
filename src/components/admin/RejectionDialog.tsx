@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,16 +17,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { rejectionReasonSchema, type RejectionReasonValues } from "@/lib/validations/rejection"
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { rejectionReasonSchema, type RejectionReasonValues } from "@/lib/validations/rejection";
 
 interface RejectionDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: (reason: string) => void
-  loading?: boolean
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: (reason: string) => void;
+  loading?: boolean;
 }
 
 export function RejectionDialog({
@@ -38,26 +38,24 @@ export function RejectionDialog({
   const form = useForm<RejectionReasonValues>({
     resolver: zodResolver(rejectionReasonSchema),
     defaultValues: { reason: "" },
-  })
+  });
 
   const handleSubmit = (data: RejectionReasonValues) => {
-    onConfirm(data.reason)
-    form.reset()
-  }
+    onConfirm(data.reason);
+    form.reset();
+  };
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) form.reset()
-    onOpenChange(isOpen)
-  }
+    if (!isOpen) form.reset();
+    onOpenChange(isOpen);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>근무 기록 반려</DialogTitle>
-          <DialogDescription>
-            반려 사유를 입력해주세요. 근무자에게 표시됩니다.
-          </DialogDescription>
+          <DialogDescription>반려 사유를 입력해주세요. 근무자에게 표시됩니다.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -98,5 +96,5 @@ export function RejectionDialog({
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

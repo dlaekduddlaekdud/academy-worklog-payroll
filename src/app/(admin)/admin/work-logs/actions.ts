@@ -1,50 +1,13 @@
 "use server";
+import { rethrowIfRedirect } from "@/lib/utils/redirect-error";
 import { getMonthRange } from "@/lib/utils/date-range";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { WorkLog, WorkLogFilter, WorkLogRow } from "@/types";
+import { toWorkLog } from "@/lib/mappers/work-log";
 import type { ActionResult } from "@/app/(worker)/worker/work-logs/actions";
-
-// DB Row를 앱 레이어 타입으로 변환
-function toWorkLog(row: {
-  id: string;
-  worker_id: string;
-  work_date: string;
-  start_time: string;
-  end_time: string;
-  duration_hours: number;
-  role_type: "assistant" | "coaching";
-  memo: string | null;
-  status: "pending" | "approved" | "rejected";
-  applied_hourly_rate: number;
-  calculated_pay: number;
-  submitted_at: string;
-  reviewed_at: string | null;
-  reviewed_by: string | null;
-  rejection_reason: string | null;
-  updated_at: string;
-}): WorkLog {
-  return {
-    id: row.id,
-    workerId: row.worker_id,
-    workDate: row.work_date,
-    startTime: row.start_time.slice(0, 5),
-    endTime: row.end_time.slice(0, 5),
-    durationHours: row.duration_hours,
-    roleType: row.role_type,
-    memo: row.memo,
-    status: row.status,
-    appliedHourlyRate: row.applied_hourly_rate,
-    calculatedPay: row.calculated_pay,
-    submittedAt: row.submitted_at,
-    reviewedAt: row.reviewed_at,
-    reviewedBy: row.reviewed_by,
-    rejectionReason: row.rejection_reason,
-    updatedAt: row.updated_at,
-  };
-}
 
 // 관리자 권한 확인 + user_id 반환
 async function getAdminUserId(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
@@ -155,6 +118,7 @@ export async function approveWorkLog(id: string): Promise<ActionResult> {
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -184,6 +148,7 @@ export async function bulkApproveWorkLogs(ids: string[]): Promise<ActionResult> 
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -230,6 +195,7 @@ export async function rejectWorkLog(id: string, reason: string): Promise<ActionR
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -275,6 +241,7 @@ export async function undoApproveWorkLog(id: string): Promise<ActionResult> {
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }

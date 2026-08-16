@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { AlertCircle } from "lucide-react"
+import { useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
 
 interface ErrorProps {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }
 
 export default function WorkerError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    console.error(error)
-  }, [error])
+    console.error(error);
+  }, [error]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 py-20 text-center">
@@ -22,9 +22,7 @@ export default function WorkerError({ error, reset }: ErrorProps) {
       </div>
       <div className="space-y-2">
         <h2 className="text-xl font-bold">오류가 발생했습니다</h2>
-        <p className="text-sm text-muted-foreground">
-          페이지를 불러오는 중 오류가 발생했습니다.
-        </p>
+        <p className="text-sm text-muted-foreground">페이지를 불러오는 중 오류가 발생했습니다.</p>
       </div>
       <div className="flex gap-3">
         <Button onClick={reset}>다시 시도</Button>
@@ -36,5 +34,5 @@ export default function WorkerError({ error, reset }: ErrorProps) {
         </Link>
       </div>
     </div>
-  )
+  );
 }

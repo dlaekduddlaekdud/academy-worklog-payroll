@@ -1,35 +1,35 @@
-import { notFound, redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { PageHeader } from "@/components/common/PageHeader"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { HourlyRateHistory } from "@/components/admin/HourlyRateHistory"
-import { HourlyRateManagerClient } from "@/components/admin/HourlyRateManagerClient"
-import { RoleBadge } from "@/components/common/StatusBadge"
-import { WorkerRatesFormClient } from "@/components/admin/WorkerRatesFormClient"
-import type { HourlyRate, HourlyRateRow } from "@/types"
+import { notFound, redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HourlyRateHistory } from "@/components/admin/HourlyRateHistory";
+import { HourlyRateManagerClient } from "@/components/admin/HourlyRateManagerClient";
+import { RoleBadge } from "@/components/common/StatusBadge";
+import { WorkerRatesFormClient } from "@/components/admin/WorkerRatesFormClient";
+import type { HourlyRate, HourlyRateRow } from "@/types";
 
 interface WorkerRatesPageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export default async function WorkerRatesPage({ params }: WorkerRatesPageProps) {
-  const { id } = await params
-  const supabase = await createClient()
+  const { id } = await params;
+  const supabase = await createClient();
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect("/login")
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
   // 근무자 정보 조회
   const { data: worker, error: workerError } = await supabase
     .from("profiles")
     .select("name, email")
     .eq("user_id", id)
-    .single()
+    .single();
 
   if (workerError || !worker) {
-    notFound()
+    notFound();
   }
 
   // 해당 근무자의 시급 이력 조회
@@ -38,7 +38,7 @@ export default async function WorkerRatesPage({ params }: WorkerRatesPageProps) 
     .select("*")
     .eq("worker_id", id)
     .order("effective_from", { ascending: false })
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: false });
 
   const workerRates: HourlyRate[] = ((ratesData ?? []) as HourlyRateRow[]).map((r) => ({
     id: r.id,
@@ -48,21 +48,16 @@ export default async function WorkerRatesPage({ params }: WorkerRatesPageProps) 
     effectiveFrom: r.effective_from,
     createdBy: r.created_by,
     createdAt: r.created_at,
-  }))
+  }));
 
   // 현재 유효 시급 (날짜 최신순)
-  const currentAssistantRate = workerRates
-    .filter((r) => r.roleType === "assistant")[0]
+  const currentAssistantRate = workerRates.filter((r) => r.roleType === "assistant")[0];
 
-  const currentCoachingRate = workerRates
-    .filter((r) => r.roleType === "coaching")[0]
+  const currentCoachingRate = workerRates.filter((r) => r.roleType === "coaching")[0];
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`${worker.name} 시급 관리`}
-        description={worker.email}
-      />
+      <PageHeader title={`${worker.name} 시급 관리`} description={worker.email} />
 
       {/* 현재 유효 시급 표시 */}
       <Card>
@@ -76,9 +71,11 @@ export default async function WorkerRatesPage({ params }: WorkerRatesPageProps) 
                 <RoleBadge roleType="assistant" />
               </div>
               <p className="text-xl font-bold">
-                {currentAssistantRate
-                  ? `${currentAssistantRate.rate.toLocaleString()}원`
-                  : <span className="text-yellow-600 text-base">미설정</span>}
+                {currentAssistantRate ? (
+                  `${currentAssistantRate.rate.toLocaleString()}원`
+                ) : (
+                  <span className="text-yellow-600 text-base">미설정</span>
+                )}
               </p>
               {currentAssistantRate && (
                 <p className="text-xs text-muted-foreground">
@@ -91,9 +88,11 @@ export default async function WorkerRatesPage({ params }: WorkerRatesPageProps) 
                 <RoleBadge roleType="coaching" />
               </div>
               <p className="text-xl font-bold">
-                {currentCoachingRate
-                  ? `${currentCoachingRate.rate.toLocaleString()}원`
-                  : <span className="text-yellow-600 text-base">미설정</span>}
+                {currentCoachingRate ? (
+                  `${currentCoachingRate.rate.toLocaleString()}원`
+                ) : (
+                  <span className="text-yellow-600 text-base">미설정</span>
+                )}
               </p>
               {currentCoachingRate && (
                 <p className="text-xs text-muted-foreground">
@@ -133,5 +132,5 @@ export default async function WorkerRatesPage({ params }: WorkerRatesPageProps) 
         <HourlyRateHistory rates={workerRates} />
       </div>
     </div>
-  )
+  );
 }

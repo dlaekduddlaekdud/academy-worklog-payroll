@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
-import { CalendarIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
@@ -14,27 +14,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { hourlyRateFormSchema, type HourlyRateFormValues } from "@/lib/validations/hourly-rate"
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { hourlyRateFormSchema, type HourlyRateFormValues } from "@/lib/validations/hourly-rate";
 
 interface HourlyRateFormProps {
-  workerId: string
-  onSubmit: (data: HourlyRateFormValues) => Promise<void>
-  isLoading?: boolean
+  workerId: string;
+  onSubmit: (data: HourlyRateFormValues) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export function HourlyRateForm({ workerId, onSubmit, isLoading = false }: HourlyRateFormProps) {
@@ -46,7 +42,7 @@ export function HourlyRateForm({ workerId, onSubmit, isLoading = false }: Hourly
       rate: 0,
       effectiveFrom: "",
     },
-  })
+  });
 
   return (
     <Form {...form}>
@@ -122,9 +118,7 @@ export function HourlyRateForm({ workerId, onSubmit, isLoading = false }: Hourly
                   <Calendar
                     mode="single"
                     selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) =>
-                      field.onChange(date ? format(date, "yyyy-MM-dd") : "")
-                    }
+                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                     locale={ko}
                   />
                 </PopoverContent>
@@ -139,5 +133,5 @@ export function HourlyRateForm({ workerId, onSubmit, isLoading = false }: Hourly
         </Button>
       </form>
     </Form>
-  )
+  );
 }

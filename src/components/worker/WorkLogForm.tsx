@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
-import { CalendarIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
@@ -15,47 +15,43 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/form";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { ConfirmDialog } from "@/components/common/ConfirmDialog"
-import { cn } from "@/lib/utils"
-import { workLogFormSchema, type WorkLogFormValues } from "@/lib/validations/work-log"
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { cn } from "@/lib/utils";
+import { workLogFormSchema, type WorkLogFormValues } from "@/lib/validations/work-log";
 
 interface WorkLogFormProps {
-  onSubmit: (data: WorkLogFormValues) => Promise<void>
-  isLoading?: boolean
-  defaultValues?: WorkLogFormValues
+  onSubmit: (data: WorkLogFormValues) => Promise<void>;
+  isLoading?: boolean;
+  defaultValues?: WorkLogFormValues;
 }
 
 // 근무 시간 계산 (분 단위)
 function calcDuration(startTime: string, endTime: string): string {
-  if (!startTime || !endTime) return ""
-  const [sh, sm] = startTime.split(":").map(Number)
-  const [eh, em] = endTime.split(":").map(Number)
-  const total = eh * 60 + em - (sh * 60 + sm)
-  if (total <= 0) return ""
-  const hours = Math.floor(total / 60)
-  const minutes = total % 60
-  if (minutes === 0) return `${hours}시간`
-  return `${hours}시간 ${minutes}분`
+  if (!startTime || !endTime) return "";
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  const total = eh * 60 + em - (sh * 60 + sm);
+  if (total <= 0) return "";
+  const hours = Math.floor(total / 60);
+  const minutes = total % 60;
+  if (minutes === 0) return `${hours}시간`;
+  return `${hours}시간 ${minutes}분`;
 }
 
 export function WorkLogForm({ onSubmit, isLoading = false, defaultValues }: WorkLogFormProps) {
-  const [confirmOpen, setConfirmOpen] = useState(false)
-  const [pendingData, setPendingData] = useState<WorkLogFormValues | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingData, setPendingData] = useState<WorkLogFormValues | null>(null);
 
   const form = useForm<WorkLogFormValues>({
     resolver: zodResolver(workLogFormSchema),
@@ -66,23 +62,23 @@ export function WorkLogForm({ onSubmit, isLoading = false, defaultValues }: Work
       roleType: undefined,
       memo: "",
     },
-  })
+  });
 
-  const startTime = form.watch("startTime")
-  const endTime = form.watch("endTime")
-  const duration = calcDuration(startTime, endTime)
+  const startTime = form.watch("startTime");
+  const endTime = form.watch("endTime");
+  const duration = calcDuration(startTime, endTime);
 
   // 폼 제출 시 확인 다이얼로그 표시
   const handleFormSubmit = (data: WorkLogFormValues) => {
-    setPendingData(data)
-    setConfirmOpen(true)
-  }
+    setPendingData(data);
+    setConfirmOpen(true);
+  };
 
   const handleConfirm = async () => {
-    if (!pendingData) return
-    setConfirmOpen(false)
-    await onSubmit(pendingData)
-  }
+    if (!pendingData) return;
+    setConfirmOpen(false);
+    await onSubmit(pendingData);
+  };
 
   return (
     <>
@@ -112,13 +108,14 @@ export function WorkLogForm({ onSubmit, isLoading = false, defaultValues }: Work
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-background border shadow-md" align="start">
+                  <PopoverContent
+                    className="w-auto p-0 bg-background border shadow-md"
+                    align="start"
+                  >
                     <Calendar
                       mode="single"
                       selected={field.value ? new Date(field.value) : undefined}
-                      onSelect={(date) =>
-                        field.onChange(date ? format(date, "yyyy-MM-dd") : "")
-                      }
+                      onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                       locale={ko}
                     />
                   </PopoverContent>
@@ -137,10 +134,7 @@ export function WorkLogForm({ onSubmit, isLoading = false, defaultValues }: Work
                 <FormItem>
                   <FormLabel>시작 시간</FormLabel>
                   <FormControl>
-                    <Input
-                      type="time"
-                      {...field}
-                    />
+                    <Input type="time" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -154,10 +148,7 @@ export function WorkLogForm({ onSubmit, isLoading = false, defaultValues }: Work
                 <FormItem>
                   <FormLabel>종료 시간</FormLabel>
                   <FormControl>
-                    <Input
-                      type="time"
-                      {...field}
-                    />
+                    <Input type="time" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -232,5 +223,5 @@ export function WorkLogForm({ onSubmit, isLoading = false, defaultValues }: Work
         loading={isLoading}
       />
     </>
-  )
+  );
 }

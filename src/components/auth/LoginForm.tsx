@@ -92,9 +92,7 @@ export function LoginForm() {
             학원 근무 관리
           </p>
           <CardTitle className="text-2xl font-bold">로그인</CardTitle>
-          <CardDescription className="text-sm">
-            계정으로 로그인하세요
-          </CardDescription>
+          <CardDescription className="text-sm">계정으로 로그인하세요</CardDescription>
         </div>
       </CardHeader>
 
@@ -117,9 +115,7 @@ export function LoginForm() {
                 autoComplete="email"
                 {...register("email")}
               />
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password">비밀번호</Label>
@@ -134,11 +130,7 @@ export function LoginForm() {
                 <p className="text-xs text-destructive">{errors.password.message}</p>
               )}
             </div>
-            <Button
-              type="submit"
-              className="h-11 w-full"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
               {isSubmitting ? "로그인 중..." : "로그인"}
             </Button>
           </form>
@@ -184,7 +176,10 @@ export function LoginForm() {
       <CardFooter className="flex-col gap-2 px-8 pb-8">
         <p className="text-center text-xs text-muted-foreground">
           계정이 없으신가요?{" "}
-          <Link href="/signup" className="font-medium text-primary underline-offset-4 hover:underline">
+          <Link
+            href="/signup"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
             회원가입
           </Link>
         </p>

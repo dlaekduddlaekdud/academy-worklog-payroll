@@ -1,8 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LoadingSkeletonProps {
-  variant: "dashboard" | "table" | "form" | "card"
-  rows?: number
+  variant: "dashboard" | "table" | "form" | "card";
+  rows?: number;
 }
 
 function DashboardSkeleton() {
@@ -35,7 +35,7 @@ function DashboardSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function TableSkeleton({ rows }: { rows: number }) {
@@ -60,7 +60,7 @@ function TableSkeleton({ rows }: { rows: number }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function FormSkeleton() {
@@ -74,7 +74,7 @@ function FormSkeleton() {
       ))}
       <Skeleton className="h-10 w-full" />
     </div>
-  )
+  );
 }
 
 function CardSkeleton() {
@@ -93,12 +93,12 @@ function CardSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function LoadingSkeleton({ variant, rows = 5 }: LoadingSkeletonProps) {
-  if (variant === "dashboard") return <DashboardSkeleton />
-  if (variant === "table") return <TableSkeleton rows={rows} />
-  if (variant === "form") return <FormSkeleton />
-  return <CardSkeleton />
+  if (variant === "dashboard") return <DashboardSkeleton />;
+  if (variant === "table") return <TableSkeleton rows={rows} />;
+  if (variant === "form") return <FormSkeleton />;
+  return <CardSkeleton />;
 }

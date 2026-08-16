@@ -36,24 +36,24 @@
 
 ## 화면
 
-| 근무 기록 제출 | 내 급여 |
-| --- | --- |
+| 근무 기록 제출                                              | 내 급여                                         |
+| ----------------------------------------------------------- | ----------------------------------------------- |
 | ![근무 기록 제출](docs/screenshots/worker-worklog-form.png) | ![내 급여](docs/screenshots/worker-payroll.png) |
 
-| 근무자 대시보드 | 근무 일정 캘린더 |
-| --- | --- |
+| 근무자 대시보드                                    | 근무 일정 캘린더                                |
+| -------------------------------------------------- | ----------------------------------------------- |
 | ![대시보드](docs/screenshots/worker-dashboard.png) | ![캘린더](docs/screenshots/worker-calendar.png) |
 
 ## 기술 스택
 
-| 영역 | 사용 기술 |
-| --- | --- |
-| 프레임워크 | Next.js 16 (App Router, Server Actions) + TypeScript strict |
+| 영역               | 사용 기술                                                     |
+| ------------------ | ------------------------------------------------------------- |
+| 프레임워크         | Next.js 16 (App Router, Server Actions) + TypeScript strict   |
 | 백엔드 / DB / 인증 | Supabase (Auth, PostgreSQL, Row Level Security, plpgsql 함수) |
-| UI | Tailwind CSS v3 + shadcn/ui |
-| 폼 / 검증 | React Hook Form + Zod |
-| 외부 연동 | Notion API (근무 일정) |
-| 배포 | Vercel |
+| UI                 | Tailwind CSS v3 + shadcn/ui                                   |
+| 폼 / 검증          | React Hook Form + Zod                                         |
+| 외부 연동          | Notion API (근무 일정)                                        |
+| 배포               | Vercel                                                        |
 
 ## 핵심 설계 결정
 
@@ -110,12 +110,12 @@ supabase-js는 여러 문장을 하나의 트랜잭션으로 묶을 수 없다. 
 
 초기 MVP는 로컬에서 한 번에 개발한 뒤 일괄 push했다. 그래서 첫 커밋 하나가 비정상적으로 크다. 그 이후의 보안·무결성 수정은 전부 브랜치와 PR로 남아 있고, 각 커밋 메시지에 문제 상황과 판단 근거를 적었다.
 
-| 마이그레이션 | 내용 |
-| --- | --- |
-| `008` | 가입 트리거가 클라이언트가 보낸 `raw_user_meta_data.role`을 그대로 신뢰하고 있었다. `signUp` 호출 한 번으로 관리자 계정을 만들 수 있는 권한 상승 경로였다. 역할을 `worker`로 고정 |
-| — | `/api/notion/schedule`에 인증이 없어 비로그인 상태로 근무자 실명과 일정 전체가 조회됐다. 인증·권한 검사 추가 |
-| `010` | 확정 월 보호 트리거 복원, `approved`/`rejected` 수정 차단 복구, 중복 RLS 정책 제거, 0행 침묵 실패 차단 |
-| `009` | 정산 확정을 `finalize_payroll` 함수로 원자화 |
+| 마이그레이션 | 내용                                                                                                                                                                              |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `008`        | 가입 트리거가 클라이언트가 보낸 `raw_user_meta_data.role`을 그대로 신뢰하고 있었다. `signUp` 호출 한 번으로 관리자 계정을 만들 수 있는 권한 상승 경로였다. 역할을 `worker`로 고정 |
+| —            | `/api/notion/schedule`에 인증이 없어 비로그인 상태로 근무자 실명과 일정 전체가 조회됐다. 인증·권한 검사 추가                                                                      |
+| `010`        | 확정 월 보호 트리거 복원, `approved`/`rejected` 수정 차단 복구, 중복 RLS 정책 제거, 0행 침묵 실패 차단                                                                            |
+| `009`        | 정산 확정을 `finalize_payroll` 함수로 원자화                                                                                                                                      |
 
 ## 로컬 실행
 
@@ -139,13 +139,13 @@ update profiles set role = 'admin' where email = 'your@email.com';
 
 ### 환경 변수
 
-| 변수 | 설명 |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | 관리자의 근무자 계정 생성에만 사용 (서버 전용) |
-| `NOTION_TOKEN` | Notion 통합 토큰 (선택) |
-| `NOTION_SCHEDULE_DB_ID` | 근무 일정 Notion DB ID (선택) |
+| 변수                            | 설명                                           |
+| ------------------------------- | ---------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase 프로젝트 URL                          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key                              |
+| `SUPABASE_SERVICE_ROLE_KEY`     | 관리자의 근무자 계정 생성에만 사용 (서버 전용) |
+| `NOTION_TOKEN`                  | Notion 통합 토큰 (선택)                        |
+| `NOTION_SCHEDULE_DB_ID`         | 근무 일정 Notion DB ID (선택)                  |
 
 Notion 환경변수가 없으면 에러 대신 빈 배열을 반환해서, 연동 없이도 나머지 기능이 동작한다.
 

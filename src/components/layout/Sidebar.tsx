@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -10,14 +10,14 @@ import {
   BookOpen,
   Shield,
   UserCircle,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { Role } from "@/types"
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { Role } from "@/types";
 
 interface NavItem {
-  label: string
-  href: string
-  icon: React.ReactNode
+  label: string;
+  href: string;
+  icon: React.ReactNode;
 }
 
 const WORKER_NAV: NavItem[] = [
@@ -41,7 +41,7 @@ const WORKER_NAV: NavItem[] = [
     href: "/worker/mypage",
     icon: <UserCircle className="h-4 w-4" />,
   },
-]
+];
 
 const ADMIN_NAV: NavItem[] = [
   {
@@ -64,16 +64,16 @@ const ADMIN_NAV: NavItem[] = [
     href: "/admin/payroll",
     icon: <CreditCard className="h-4 w-4" />,
   },
-]
+];
 
 interface SidebarProps {
-  role: Role
-  isAdmin?: boolean
+  role: Role;
+  isAdmin?: boolean;
 }
 
 export function Sidebar({ role, isAdmin = false }: SidebarProps) {
-  const pathname = usePathname()
-  const navItems = role === "admin" ? ADMIN_NAV : WORKER_NAV
+  const pathname = usePathname();
+  const navItems = role === "admin" ? ADMIN_NAV : WORKER_NAV;
 
   return (
     <aside className="flex h-full w-64 flex-col border-r bg-background">
@@ -88,7 +88,7 @@ export function Sidebar({ role, isAdmin = false }: SidebarProps) {
       {/* 네비게이션 */}
       <nav className="flex-1 space-y-1 p-4">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
@@ -103,7 +103,7 @@ export function Sidebar({ role, isAdmin = false }: SidebarProps) {
               {item.icon}
               {item.label}
             </Link>
-          )
+          );
         })}
       </nav>
 
@@ -123,5 +123,5 @@ export function Sidebar({ role, isAdmin = false }: SidebarProps) {
         </p>
       </div>
     </aside>
-  )
+  );
 }

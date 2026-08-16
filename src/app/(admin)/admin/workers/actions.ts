@@ -1,4 +1,5 @@
 "use server";
+import { rethrowIfRedirect } from "@/lib/utils/redirect-error";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -50,9 +51,7 @@ export async function getWorkers(): Promise<WorkerSummary[]> {
 }
 
 // 시급 등록
-export async function createHourlyRate(
-  data: HourlyRateFormValues
-): Promise<ActionResult> {
+export async function createHourlyRate(data: HourlyRateFormValues): Promise<ActionResult> {
   try {
     const supabase = await createClient();
     const {
@@ -70,13 +69,17 @@ export async function createHourlyRate(
       created_by: user.id,
     });
 
-    if (error) return { success: false, error: `시급 등록에 실패했습니다. (${error.code}: ${error.message})` };
+    if (error)
+      return {
+        success: false,
+        error: `시급 등록에 실패했습니다. (${error.code}: ${error.message})`,
+      };
 
     revalidatePath(`/admin/workers/${data.workerId}/rates`);
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    rethrowIfRedirect(e);
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
@@ -89,7 +92,9 @@ export async function updateHourlyRate(
 ): Promise<ActionResult> {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) redirect("/login");
 
     await assertAdmin(supabase, user.id);
@@ -104,33 +109,31 @@ export async function updateHourlyRate(
     revalidatePath(`/admin/workers/${workerId}/rates`);
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
 
 // 시급 삭제
-export async function deleteHourlyRate(
-  id: string,
-  workerId: string
-): Promise<ActionResult> {
+export async function deleteHourlyRate(id: string, workerId: string): Promise<ActionResult> {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) redirect("/login");
 
     await assertAdmin(supabase, user.id);
 
-    const { error } = await supabase
-      .from("hourly_rates")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("hourly_rates").delete().eq("id", id);
 
     if (error) return { success: false, error: `삭제에 실패했습니다. (${error.message})` };
 
     revalidatePath(`/admin/workers/${workerId}/rates`);
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }

@@ -19,8 +19,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 보호된 라우트는 로그인 필수
-  const isProtectedRoute =
-    pathname.startsWith("/admin") || pathname.startsWith("/worker");
+  const isProtectedRoute = pathname.startsWith("/admin") || pathname.startsWith("/worker");
 
   if (isProtectedRoute && !user) {
     return NextResponse.redirect(new URL("/login", request.url));

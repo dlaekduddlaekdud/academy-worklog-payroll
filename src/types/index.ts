@@ -1,12 +1,7 @@
 // 타입 모듈 일괄 re-export
 // 외부에서 "@/types"로 모든 타입을 가져올 수 있음
 
-export type {
-  Role,
-  UserProfile,
-  WorkerSummary,
-  AuthClaims,
-} from "./auth";
+export type { Role, UserProfile, WorkerSummary, AuthClaims } from "./auth";
 
 export type {
   RoleType,

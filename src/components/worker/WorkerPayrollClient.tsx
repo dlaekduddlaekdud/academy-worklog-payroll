@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { MonthPicker } from "@/components/common/MonthPicker"
-import { PayrollCard } from "@/components/worker/PayrollCard"
-import { PayrollDetail } from "@/components/worker/PayrollDetail"
-import { EmptyState } from "@/components/common/EmptyState"
-import type { PayrollSummary, WorkLog } from "@/types"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { MonthPicker } from "@/components/common/MonthPicker";
+import { PayrollCard } from "@/components/worker/PayrollCard";
+import { PayrollDetail } from "@/components/worker/PayrollDetail";
+import { EmptyState } from "@/components/common/EmptyState";
+import type { PayrollSummary, WorkLog } from "@/types";
 
 interface WorkerPayrollClientProps {
-  initialSummary: PayrollSummary | null
-  initialLogs: WorkLog[]
-  workerName: string
-  initialYear: number
-  initialMonth: number
+  initialSummary: PayrollSummary | null;
+  initialLogs: WorkLog[];
+  workerName: string;
+  initialYear: number;
+  initialMonth: number;
 }
 
 export function WorkerPayrollClient({
@@ -23,15 +23,13 @@ export function WorkerPayrollClient({
   initialYear,
   initialMonth,
 }: WorkerPayrollClientProps) {
-  const router = useRouter()
-  const [month, setMonth] = useState({ year: initialYear, month: initialMonth })
+  const router = useRouter();
+  const [month, setMonth] = useState({ year: initialYear, month: initialMonth });
 
   const handleMonthChange = (newMonth: { year: number; month: number }) => {
-    setMonth(newMonth)
-    router.push(
-      `/worker/payroll?year=${newMonth.year}&month=${newMonth.month}`
-    )
-  }
+    setMonth(newMonth);
+    router.push(`/worker/payroll?year=${newMonth.year}&month=${newMonth.month}`);
+  };
 
   return (
     <>
@@ -40,11 +38,7 @@ export function WorkerPayrollClient({
       {initialSummary ? (
         <div className="space-y-4">
           <PayrollCard summary={initialSummary} workerName={workerName} />
-          <PayrollDetail
-            logs={initialLogs}
-            year={month.year}
-            month={month.month}
-          />
+          <PayrollDetail logs={initialLogs} year={month.year} month={month.month} />
         </div>
       ) : (
         <EmptyState
@@ -53,5 +47,5 @@ export function WorkerPayrollClient({
         />
       )}
     </>
-  )
+  );
 }

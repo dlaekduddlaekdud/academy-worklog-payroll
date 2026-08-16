@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
 // 마이페이지 클라이언트 컴포넌트
 // 좌측: 내 근무 달력 (work_logs), 우측: 판교관 전체 근무 달력 (Notion API)
 
-import { useState, useEffect, useCallback } from "react"
-import { ChevronLeft, ChevronRight, User, Clock, Wallet } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Separator } from "@/components/ui/separator"
-import { ScheduleCalendar, type CalendarEntry } from "@/components/worker/ScheduleCalendar"
-import type { WorkLog } from "@/types"
-import type { NotionScheduleEntry } from "@/lib/services/notion"
+import { useState, useEffect, useCallback } from "react";
+import { ChevronLeft, ChevronRight, User, Clock, Wallet } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { ScheduleCalendar, type CalendarEntry } from "@/components/worker/ScheduleCalendar";
+import type { WorkLog } from "@/types";
+import type { NotionScheduleEntry } from "@/lib/services/notion";
 
 // 역할별 색상 매핑
 const ROLE_COLOR_MAP: Record<string, string> = {
-  "1관 초등조교": "#f97316",  // orange
-  "2관 중등조교": "#3b82f6",  // blue
-  "3관 고등조교": "#16a34a",  // dark green
-  "3관 고등코칭": "#0d9488",  // teal
-}
+  "1관 초등조교": "#f97316", // orange
+  "2관 중등조교": "#3b82f6", // blue
+  "3관 고등조교": "#16a34a", // dark green
+  "3관 고등코칭": "#0d9488", // teal
+};
 
-const DEFAULT_COLOR = "#6b7280"
+const DEFAULT_COLOR = "#6b7280";
 
 function getRoleColor(roleLabel: string): string {
-  return ROLE_COLOR_MAP[roleLabel] ?? DEFAULT_COLOR
+  return ROLE_COLOR_MAP[roleLabel] ?? DEFAULT_COLOR;
 }
 
 // work_logs 데이터를 달력 배지 형식으로 변환
@@ -33,46 +33,44 @@ function workLogsToCalendarEntries(logs: WorkLog[]): CalendarEntry[] {
     date: log.workDate,
     label: log.roleType === "assistant" ? "조교" : "코칭",
     color: log.roleType === "assistant" ? "#f97316" : "#0d9488",
-  }))
+  }));
 }
 
 // Notion 일정 데이터를 달력 배지 형식으로 변환
-function notionEntriesToCalendarEntries(
-  entries: NotionScheduleEntry[]
-): CalendarEntry[] {
+function notionEntriesToCalendarEntries(entries: NotionScheduleEntry[]): CalendarEntry[] {
   return entries.map((entry) => ({
     date: entry.date,
     label: entry.roleLabel,
     color: getRoleColor(entry.roleLabel),
-  }))
+  }));
 }
 
 // 승인된 근무 기록 기준 이번 달 총 시간/금액 계산
 function calcMonthSummary(logs: WorkLog[]) {
-  const approved = logs.filter((l) => l.status === "approved")
-  const totalHours = approved.reduce((sum, l) => sum + (l.durationHours ?? 0), 0)
-  const totalPay = approved.reduce((sum, l) => sum + (l.calculatedPay ?? 0), 0)
-  return { totalHours, totalPay }
+  const approved = logs.filter((l) => l.status === "approved");
+  const totalHours = approved.reduce((sum, l) => sum + (l.durationHours ?? 0), 0);
+  const totalPay = approved.reduce((sum, l) => sum + (l.calculatedPay ?? 0), 0);
+  return { totalHours, totalPay };
 }
 
 function formatMoney(amount: number): string {
-  return amount.toLocaleString("ko-KR") + "원"
+  return amount.toLocaleString("ko-KR") + "원";
 }
 
 function formatHours(hours: number): string {
-  const h = Math.floor(hours)
-  const m = Math.round((hours - h) * 60)
-  if (m === 0) return `${h}시간`
-  return `${h}시간 ${m}분`
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  if (m === 0) return `${h}시간`;
+  return `${h}시간 ${m}분`;
 }
 
 interface MyPageClientProps {
-  workerName: string
-  initialWorkLogs: WorkLog[]
-  initialYear: number
-  initialMonth: number
-  assistantRate: number | null
-  coachingRate: number | null
+  workerName: string;
+  initialWorkLogs: WorkLog[];
+  initialYear: number;
+  initialMonth: number;
+  assistantRate: number | null;
+  coachingRate: number | null;
 }
 
 export function MyPageClient({
@@ -83,45 +81,53 @@ export function MyPageClient({
   assistantRate,
   coachingRate,
 }: MyPageClientProps) {
-  const [year, setYear] = useState(initialYear)
-  const [month, setMonth] = useState(initialMonth)
-  const [notionEntries, setNotionEntries] = useState<NotionScheduleEntry[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [year, setYear] = useState(initialYear);
+  const [month, setMonth] = useState(initialMonth);
+  const [notionEntries, setNotionEntries] = useState<NotionScheduleEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // 월 변경 시 Notion 일정 재조회
   const fetchNotionSchedule = useCallback(async (y: number, m: number) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const res = await fetch(`/api/notion/schedule?year=${y}&month=${m}`)
-      if (!res.ok) throw new Error("일정 조회 실패")
-      const data = (await res.json()) as { entries: NotionScheduleEntry[] }
-      setNotionEntries(data.entries)
+      const res = await fetch(`/api/notion/schedule?year=${y}&month=${m}`);
+      if (!res.ok) throw new Error("일정 조회 실패");
+      const data = (await res.json()) as { entries: NotionScheduleEntry[] };
+      setNotionEntries(data.entries);
     } catch {
-      setNotionEntries([])
+      setNotionEntries([]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchNotionSchedule(year, month)
-  }, [year, month, fetchNotionSchedule])
+    fetchNotionSchedule(year, month);
+  }, [year, month, fetchNotionSchedule]);
 
   const handlePrevMonth = () => {
-    if (month === 1) { setYear((y) => y - 1); setMonth(12) }
-    else { setMonth((m) => m - 1) }
-  }
+    if (month === 1) {
+      setYear((y) => y - 1);
+      setMonth(12);
+    } else {
+      setMonth((m) => m - 1);
+    }
+  };
 
   const handleNextMonth = () => {
-    if (month === 12) { setYear((y) => y + 1); setMonth(1) }
-    else { setMonth((m) => m + 1) }
-  }
+    if (month === 12) {
+      setYear((y) => y + 1);
+      setMonth(1);
+    } else {
+      setMonth((m) => m + 1);
+    }
+  };
 
-  const { totalHours, totalPay } = calcMonthSummary(initialWorkLogs)
+  const { totalHours, totalPay } = calcMonthSummary(initialWorkLogs);
 
   // 달력 배지 데이터 변환
-  const myCalendarEntries = workLogsToCalendarEntries(initialWorkLogs)
-  const allCalendarEntries = notionEntriesToCalendarEntries(notionEntries)
+  const myCalendarEntries = workLogsToCalendarEntries(initialWorkLogs);
+  const allCalendarEntries = notionEntriesToCalendarEntries(notionEntries);
 
   return (
     <div className="space-y-6">
@@ -139,12 +145,18 @@ export function MyPageClient({
                 <div className="mt-1 flex flex-col gap-0.5">
                   {assistantRate !== null && (
                     <p className="text-sm text-muted-foreground">
-                      조교 시급: <span className="font-medium text-foreground">{formatMoney(assistantRate)}</span>
+                      조교 시급:{" "}
+                      <span className="font-medium text-foreground">
+                        {formatMoney(assistantRate)}
+                      </span>
                     </p>
                   )}
                   {coachingRate !== null && (
                     <p className="text-sm text-muted-foreground">
-                      코칭 시급: <span className="font-medium text-foreground">{formatMoney(coachingRate)}</span>
+                      코칭 시급:{" "}
+                      <span className="font-medium text-foreground">
+                        {formatMoney(coachingRate)}
+                      </span>
                     </p>
                   )}
                   {assistantRate === null && coachingRate === null && (
@@ -162,7 +174,9 @@ export function MyPageClient({
                 <Clock className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{initialYear}년 {initialMonth}월 근무 시간</p>
+                <p className="text-xs text-muted-foreground">
+                  {initialYear}년 {initialMonth}월 근무 시간
+                </p>
                 <p className="mt-0.5 text-lg font-semibold">{formatHours(totalHours)}</p>
                 <p className="text-xs text-muted-foreground">승인된 기록 기준</p>
               </div>
@@ -176,7 +190,9 @@ export function MyPageClient({
                 <Wallet className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{initialYear}년 {initialMonth}월 예상 급여</p>
+                <p className="text-xs text-muted-foreground">
+                  {initialYear}년 {initialMonth}월 예상 급여
+                </p>
                 <p className="mt-0.5 text-lg font-semibold">{formatMoney(totalPay)}</p>
                 <p className="text-xs text-muted-foreground">승인된 기록 기준</p>
               </div>
@@ -208,11 +224,7 @@ export function MyPageClient({
             <CardTitle className="text-sm font-semibold">내 근무 달력</CardTitle>
           </CardHeader>
           <CardContent>
-            <ScheduleCalendar
-              year={year}
-              month={month}
-              entries={myCalendarEntries}
-            />
+            <ScheduleCalendar year={year} month={month} entries={myCalendarEntries} />
           </CardContent>
         </Card>
 
@@ -225,11 +237,7 @@ export function MyPageClient({
             {isLoading ? (
               <CalendarSkeleton />
             ) : (
-              <ScheduleCalendar
-                year={year}
-                month={month}
-                entries={allCalendarEntries}
-              />
+              <ScheduleCalendar year={year} month={month} entries={allCalendarEntries} />
             )}
           </CardContent>
         </Card>
@@ -253,7 +261,7 @@ export function MyPageClient({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 // 달력 로딩 스켈레톤
@@ -266,5 +274,5 @@ function CalendarSkeleton() {
         ))}
       </div>
     </div>
-  )
+  );
 }

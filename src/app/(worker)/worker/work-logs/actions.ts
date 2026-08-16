@@ -1,4 +1,5 @@
 "use server";
+import { rethrowIfRedirect } from "@/lib/utils/redirect-error";
 import { getMonthRange } from "@/lib/utils/date-range";
 
 import { redirect } from "next/navigation";
@@ -8,50 +9,11 @@ import { getEffectiveHourlyRate } from "@/lib/services/hourly-rate";
 import { calculateDurationHours, calculatePay } from "@/lib/utils/pay-calculator";
 import type { WorkLogFormValues } from "@/lib/validations/work-log";
 import type { WorkLog, WorkLogFilter, WorkLogMonthlySummary, WorkLogRow } from "@/types";
+import { toWorkLog } from "@/lib/mappers/work-log";
 
 export interface ActionResult {
   success: boolean;
   error?: string;
-}
-
-// DB Row를 앱 레이어 타입으로 변환
-function toWorkLog(row: {
-  id: string;
-  worker_id: string;
-  work_date: string;
-  start_time: string;
-  end_time: string;
-  duration_hours: number;
-  role_type: "assistant" | "coaching";
-  memo: string | null;
-  status: "pending" | "approved" | "rejected";
-  applied_hourly_rate: number;
-  calculated_pay: number;
-  submitted_at: string;
-  reviewed_at: string | null;
-  reviewed_by: string | null;
-  rejection_reason: string | null;
-  updated_at: string;
-}): WorkLog {
-  return {
-    id: row.id,
-    workerId: row.worker_id,
-    workDate: row.work_date,
-    // DB에는 "HH:mm:ss" 형식이므로 "HH:mm"만 추출
-    startTime: row.start_time.slice(0, 5),
-    endTime: row.end_time.slice(0, 5),
-    durationHours: row.duration_hours,
-    roleType: row.role_type,
-    memo: row.memo,
-    status: row.status,
-    appliedHourlyRate: row.applied_hourly_rate,
-    calculatedPay: row.calculated_pay,
-    submittedAt: row.submitted_at,
-    reviewedAt: row.reviewed_at,
-    reviewedBy: row.reviewed_by,
-    rejectionReason: row.rejection_reason,
-    updatedAt: row.updated_at,
-  };
 }
 
 // 해당 월이 확정된 상태인지 확인 — 확정이면 에러를 throw
@@ -123,6 +85,7 @@ export async function createWorkLog(data: WorkLogFormValues): Promise<ActionResu
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -213,6 +176,7 @@ export async function updateWorkLog(id: string, data: WorkLogFormValues): Promis
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -300,6 +264,7 @@ export async function deleteWorkLog(id: string): Promise<ActionResult> {
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }

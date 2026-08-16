@@ -28,13 +28,14 @@ const { data } = await supabase
   .select("rate")
   .eq("worker_id", workerId)
   .eq("role_type", roleType)
-  .lte("effective_from", workDate)       // effective_from <= work_date
+  .lte("effective_from", workDate) // effective_from <= work_date
   .order("effective_from", { ascending: false })
   .limit(1)
   .single();
 ```
 
 **검토 포인트:**
+
 - `effective_from <= work_date` 조건이 있는가?
 - `ORDER BY effective_from DESC LIMIT 1` 패턴을 따르는가?
 - applied_hourly_rate와 calculated_pay가 모두 저장되는가?
@@ -45,6 +46,7 @@ const { data } = await supabase
 **검토 기준:** Server Action + DB trigger 이중 방어가 모두 적용되어 있는가?
 
 **앱 레벨 체크 (Server Action):**
+
 ```typescript
 // 모든 work_logs 변경 Server Action에서 이 체크가 있어야 함
 const { data } = await supabase
@@ -53,7 +55,7 @@ const { data } = await supabase
   .eq("worker_id", workerId)
   .eq("year", year)
   .eq("month", month)
-  .maybeSingle();  // single() 아닌 maybeSingle() — 레코드 없으면 null 반환
+  .maybeSingle(); // single() 아닌 maybeSingle() — 레코드 없으면 null 반환
 
 // 레코드 없으면 아직 정산 미생성 = finalized 아님 → 통과
 if (data?.status === "finalized") {
@@ -62,6 +64,7 @@ if (data?.status === "finalized") {
 ```
 
 **DB trigger:**
+
 ```sql
 -- work_logs INSERT/UPDATE 시 확정 월 체크 trigger가 존재하는가?
 CREATE TRIGGER check_finalized_month
@@ -71,6 +74,7 @@ CREATE TRIGGER check_finalized_month
 ```
 
 **검토 포인트:**
+
 - 근무 기록 생성(INSERT)에 양쪽 체크가 있는가?
 - 근무 기록 수정(UPDATE)에 양쪽 체크가 있는가?
 - 근무 기록 삭제(DELETE)에 앱 레벨 체크가 있는가?
@@ -81,14 +85,15 @@ CREATE TRIGGER check_finalized_month
 
 **허용되는 전이:**
 
-| 현재 | 목표 | 조건 |
-|------|------|------|
-| pending | approved | admin만 |
-| pending | rejected | admin만 + rejection_reason 필수 |
-| rejected | pending | worker 재제출 |
-| approved | pending | admin + finalized 월 제외 |
+| 현재     | 목표     | 조건                            |
+| -------- | -------- | ------------------------------- |
+| pending  | approved | admin만                         |
+| pending  | rejected | admin만 + rejection_reason 필수 |
+| rejected | pending  | worker 재제출                   |
+| approved | pending  | admin + finalized 월 제외       |
 
 **검토 포인트:**
+
 - 허용되지 않는 전이가 존재하지 않는가? (예: approved → rejected 직접 전이)
 - 전이 전 현재 상태를 DB에서 조회하여 검증하는가? (UI 상태만 믿지 않는가?)
 - rejected → pending 시 rejection_reason을 null로 초기화하는가?
@@ -117,6 +122,7 @@ payroll_summaries:
 ```
 
 **검토 포인트:**
+
 - worker가 다른 worker의 데이터에 접근할 수 없는가?
 - admin 판별 시 profiles 테이블의 role을 조회하는가?
 - INSERT 정책: worker가 자신의 worker_id로만 생성 가능한가?
@@ -132,12 +138,13 @@ const { data } = await supabase
   .from("work_logs")
   .select("duration_hours, calculated_pay")
   .eq("worker_id", workerId)
-  .eq("status", "approved")  // approved만 합산
+  .eq("status", "approved") // approved만 합산
   .gte("work_date", `${year}-${month.toString().padStart(2, "0")}-01`)
   .lte("work_date", lastDayOfMonth);
 ```
 
 **검토 포인트:**
+
 - pending이나 rejected 기록이 합산에 포함되지 않는가?
 - calculated_pay(스냅샷 금액)을 합산하는가? (시급을 재조회하여 재계산하지 않는가?)
 - UNIQUE(worker_id, year, month) 제약을 위반하는 UPSERT 로직이 없는가?
@@ -146,6 +153,7 @@ const { data } = await supabase
 ### 6. Server Action 보안
 
 **검토 포인트:**
+
 - `supabase.auth.admin.createUser()`가 Server Action(`"use server"`)에서만 실행되는가?
 - service_role key가 클라이언트 컴포넌트에 노출되지 않는가?
 - `SUPABASE_SERVICE_ROLE_KEY`가 `NEXT_PUBLIC_` 접두사 없이 사용되는가?
@@ -155,6 +163,7 @@ const { data } = await supabase
 ### 7. TypeScript any 금지
 
 **검토 포인트:**
+
 - `any` 타입이 사용된 곳이 없는가?
 - `as any` 캐스팅이 없는가?
 - Supabase 응답 타입이 제네릭으로 명시되어 있는가?
@@ -174,6 +183,7 @@ const { data } = await supabase
 ### 8. Next.js 16 패턴
 
 **검토 포인트:**
+
 - params, searchParams가 Promise로 await 되는가?
 - proxy.ts 패턴으로 세션 검증을 하는가? (middleware.ts가 아닌)
 - Server Component에서 `await createClient()`로 Supabase 클라이언트를 생성하는가?
@@ -186,7 +196,7 @@ type Props = {
 };
 
 export default async function Page({ params }: Props) {
-  const { id } = await params;  // await 필수
+  const { id } = await params; // await 필수
   // ...
 }
 ```
@@ -194,6 +204,7 @@ export default async function Page({ params }: Props) {
 ### 9. Tailwind v3 준수
 
 **검토 포인트:**
+
 - globals.css 또는 스타일 파일에 `@import "tailwindcss"` 없는가? (v4 문법)
 - `@theme {}` 블록이 없는가? (v4 문법)
 - tailwind.config.ts 파일이 존재하는가?
@@ -208,27 +219,28 @@ export default async function Page({ params }: Props) {
 
 ### 심각도 분류
 
-| 등급 | 의미 | 조치 |
-|------|------|------|
+| 등급     | 의미                             | 조치           |
+| -------- | -------------------------------- | -------------- |
 | **높음** | 데이터 무결성, 보안, 정확성 문제 | 즉시 수정 필수 |
-| **중간** | 품질, 유지보수성, 성능 문제 | 권장 수정 |
-| **낮음** | 스타일, 가독성, 선택적 개선 | 선택 수정 |
+| **중간** | 품질, 유지보수성, 성능 문제      | 권장 수정      |
+| **낮음** | 스타일, 가독성, 선택적 개선      | 선택 수정      |
 
 ### 피드백 템플릿
 
-```markdown
+````markdown
 ## 리뷰 결과
 
 ### 높음 (즉시 수정)
 
 #### 1. [제목]
+
 - **파일**: `src/app/(worker)/worker/work-logs/actions.ts:42`
 - **문제**: [구체적인 문제 설명]
 - **영향**: [이 문제가 발생시키는 결과]
 - **수정 방법**:
-\```typescript
-// 현재 코드
-problematic code here
+  \```typescript
+  // 현재 코드
+  problematic code here
 
 // 수정 코드
 fixed code here
@@ -237,6 +249,7 @@ fixed code here
 ### 중간 (권장)
 
 #### 1. [제목]
+
 - **파일**: `src/lib/services/work-log.ts:15`
 - **문제**: [문제 설명]
 - **개선 방법**: [제안]
@@ -244,9 +257,10 @@ fixed code here
 ### 낮음 (선택)
 
 #### 1. [제목]
+
 - **파일**: `src/types/database.ts:8`
 - **제안**: [개선 제안]
-```
+````
 
 ---
 
@@ -259,7 +273,8 @@ fixed code here
 ```typescript
 // 잘못된 패턴: approved 기록의 시급을 현재 시급으로 재계산
 const currentRate = await getEffectiveRate(workerId, roleType, today);
-await supabase.from("work_logs")
+await supabase
+  .from("work_logs")
   .update({ applied_hourly_rate: currentRate, calculated_pay: hours * currentRate })
   .eq("id", workLogId);
 
@@ -290,7 +305,7 @@ export async function updateWorkLog(id: string, data: UpdateData) {
 const rate = rateData?.rate ?? null;
 await supabase.from("work_logs").insert({
   ...data,
-  applied_hourly_rate: rate,  // null 가능성!
+  applied_hourly_rate: rate, // null 가능성!
 });
 
 // 올바른 패턴: 시급이 없으면 제출 자체를 차단
@@ -304,14 +319,21 @@ if (!rateData) {
 ```typescript
 // 잘못된 패턴: INSERT로만 처리 (중복 시 에러)
 await supabase.from("payroll_summaries").insert({
-  worker_id: workerId, year, month, total_hours, total_pay, status: "draft"
+  worker_id: workerId,
+  year,
+  month,
+  total_hours,
+  total_pay,
+  status: "draft",
 });
 
 // 올바른 패턴: UPSERT 또는 존재 여부 확인 후 처리
-await supabase.from("payroll_summaries").upsert(
-  { worker_id: workerId, year, month, total_hours, total_pay, status: "draft" },
-  { onConflict: "worker_id,year,month" }
-);
+await supabase
+  .from("payroll_summaries")
+  .upsert(
+    { worker_id: workerId, year, month, total_hours, total_pay, status: "draft" },
+    { onConflict: "worker_id,year,month" }
+  );
 ```
 
 ### 실수 5: 정산 시 모든 상태 합산
@@ -329,7 +351,7 @@ const { data } = await supabase
   .from("work_logs")
   .select("calculated_pay")
   .eq("worker_id", workerId)
-  .eq("status", "approved");  // 반드시 approved만
+  .eq("status", "approved"); // 반드시 approved만
 ```
 
 ### 실수 6: Server Action 후 revalidatePath 누락
@@ -345,7 +367,7 @@ export async function approveWorkLog(id: string) {
 import { revalidatePath } from "next/cache";
 export async function approveWorkLog(id: string) {
   await supabase.from("work_logs").update({ status: "approved" }).eq("id", id);
-  revalidatePath("/admin/work-logs");  // 관련 페이지 캐시 갱신
+  revalidatePath("/admin/work-logs"); // 관련 페이지 캐시 갱신
   revalidatePath("/worker/work-logs");
 }
 ```

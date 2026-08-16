@@ -1,6 +1,6 @@
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -8,20 +8,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { RoleBadge } from "@/components/common/StatusBadge"
-import { EmptyState } from "@/components/common/EmptyState"
-import type { WorkLog } from "@/types"
+} from "@/components/ui/table";
+import { RoleBadge } from "@/components/common/StatusBadge";
+import { EmptyState } from "@/components/common/EmptyState";
+import type { WorkLog } from "@/types";
 
 interface PayrollDetailProps {
-  logs: WorkLog[]
-  year: number
-  month: number
+  logs: WorkLog[];
+  year: number;
+  month: number;
 }
 
 export function PayrollDetail({ logs, year, month }: PayrollDetailProps) {
   // 승인된 기록만 표시
-  const approvedLogs = logs.filter((log) => log.status === "approved")
+  const approvedLogs = logs.filter((log) => log.status === "approved");
 
   return (
     <Card>
@@ -79,5 +79,5 @@ export function PayrollDetail({ logs, year, month }: PayrollDetailProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

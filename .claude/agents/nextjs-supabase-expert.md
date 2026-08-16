@@ -129,8 +129,10 @@ import { redirect } from "next/navigation";
 
 // getClaims로 사용자 정보 조회
 const supabase = await createClient();
-const { data: { claims } } = await supabase.auth.getClaims();
-if (!claims) redirect("/login");  // /auth/login 아닌 /login
+const {
+  data: { claims },
+} = await supabase.auth.getClaims();
+if (!claims) redirect("/login"); // /auth/login 아닌 /login
 const userId = claims.sub;
 ```
 
@@ -139,6 +141,7 @@ const userId = claims.sub;
 근무 기록 제출 시 **그 시점의 유효 시급**을 work_logs에 스냅샷으로 저장한다. 이후 시급이 변경되어도 이미 제출/승인된 기록의 금액은 변하지 않는다.
 
 **유효 시급 조회 쿼리:**
+
 ```sql
 SELECT rate FROM hourly_rates
 WHERE worker_id = $1
@@ -149,6 +152,7 @@ LIMIT 1;
 ```
 
 **Server Action 패턴:**
+
 ```typescript
 "use server";
 
@@ -159,7 +163,9 @@ import { revalidatePath } from "next/cache";
 export async function submitWorkLog(formData: WorkLogFormData) {
   const supabase = await createClient();
 
-  const { data: { claims } } = await supabase.auth.getClaims();
+  const {
+    data: { claims },
+  } = await supabase.auth.getClaims();
   if (!claims) redirect("/login");
   const userId = claims.sub;
 
@@ -207,18 +213,18 @@ export async function submitWorkLog(formData: WorkLogFormData) {
 
 허용되는 전이만 명시적으로 구현한다:
 
-| 현재 상태 | 목표 상태 | 조건 | 실행 주체 |
-|-----------|-----------|------|-----------|
-| pending | approved | - | admin |
-| pending | rejected | rejection_reason 필수 | admin |
-| rejected | pending | 근무자 재제출 | worker |
-| approved | pending | 해당 월 finalized 아님 | admin |
+| 현재 상태 | 목표 상태 | 조건                   | 실행 주체 |
+| --------- | --------- | ---------------------- | --------- |
+| pending   | approved  | -                      | admin     |
+| pending   | rejected  | rejection_reason 필수  | admin     |
+| rejected  | pending   | 근무자 재제출          | worker    |
+| approved  | pending   | 해당 월 finalized 아님 | admin     |
 
 ```typescript
 const VALID_TRANSITIONS: Record<string, string[]> = {
   pending: ["approved", "rejected"],
   rejected: ["pending"],
-  approved: ["pending"],  // finalized 월 제외
+  approved: ["pending"], // finalized 월 제외
 };
 
 function validateTransition(current: string, next: string): boolean {
@@ -227,6 +233,7 @@ function validateTransition(current: string, next: string): boolean {
 ```
 
 **승인/반려 Server Action:**
+
 ```typescript
 "use server";
 
@@ -239,7 +246,9 @@ export async function reviewWorkLog(
 ) {
   const supabase = await createClient();
 
-  const { data: { claims } } = await supabase.auth.getClaims();
+  const {
+    data: { claims },
+  } = await supabase.auth.getClaims();
   if (!claims) redirect("/login");
 
   // admin 권한 확인
@@ -293,12 +302,9 @@ export async function reviewWorkLog(
 ### 4. 확정 월 보호 (이중 방어)
 
 **앱 레벨 (Server Action):**
+
 ```typescript
-async function assertNotFinalized(
-  supabase: SupabaseClient,
-  workerId: string,
-  workDate: string
-) {
+async function assertNotFinalized(supabase: SupabaseClient, workerId: string, workDate: string) {
   const date = new Date(workDate);
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
@@ -309,7 +315,7 @@ async function assertNotFinalized(
     .eq("worker_id", workerId)
     .eq("year", year)
     .eq("month", month)
-    .maybeSingle();  // single() 아닌 maybeSingle() — 레코드 없으면 null 반환
+    .maybeSingle(); // single() 아닌 maybeSingle() — 레코드 없으면 null 반환
 
   // 레코드 없으면 아직 정산 미생성 = finalized 아님 → 통과
   if (data?.status === "finalized") {
@@ -319,6 +325,7 @@ async function assertNotFinalized(
 ```
 
 **DB 레벨 (trigger):**
+
 ```sql
 CREATE OR REPLACE FUNCTION prevent_finalized_month_changes()
 RETURNS TRIGGER AS $$
@@ -349,7 +356,9 @@ import { createServiceRoleClient } from "@/lib/supabase/service";
 export async function createWorkerAccount(data: CreateWorkerData) {
   // 먼저 현재 사용자가 admin인지 확인 (일반 클라이언트)
   const supabase = await createClient();
-  const { data: { claims } } = await supabase.auth.getClaims();
+  const {
+    data: { claims },
+  } = await supabase.auth.getClaims();
   if (!claims) redirect("/login");
   // ... admin 권한 확인
 
@@ -448,7 +457,9 @@ import { createServerClient } from "@supabase/ssr";
 
 export async function proxy(request: Request) {
   const supabase = createServerClient(/* ... */);
-  const { data: { claims } } = await supabase.auth.getClaims();
+  const {
+    data: { claims },
+  } = await supabase.auth.getClaims();
 
   if (!claims && isProtectedRoute(request.url)) {
     return Response.redirect(new URL("/login", request.url));
@@ -473,7 +484,7 @@ export async function proxy(request: Request) {
 
 1. **분석**: 요구사항 파악, 관련 테이블/정책 확인
 2. **설계**: 상태 전이, 데이터 흐름, 에러 케이스 정리 (sequential-thinking 활용)
-3. **DB 작업**: 마이그레이션, RLS, trigger (mcp__supabase 활용)
+3. **DB 작업**: 마이그레이션, RLS, trigger (mcp\_\_supabase 활용)
 4. **구현**: Server Action → 타입 정의 → 클라이언트 연동
 5. **검증**: npm run check, RLS 정책 테스트, 시급 계산 정확성
 

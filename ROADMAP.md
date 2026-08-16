@@ -15,15 +15,15 @@
 
 ### 기술 스택
 
-| 영역 | 기술 |
-|------|------|
-| 프레임워크 | Next.js 16 (App Router) + TypeScript strict |
-| 백엔드/DB/인증 | Supabase (Auth + PostgreSQL + RLS) |
-| 스타일링 | Tailwind CSS v3 + shadcn/ui (new-york) |
-| 폼/유효성 검사 | React Hook Form + Zod |
-| 날짜 처리 | date-fns |
-| 알림 | sonner (Toast) |
-| E2E 테스트 | Playwright MCP |
+| 영역           | 기술                                        |
+| -------------- | ------------------------------------------- |
+| 프레임워크     | Next.js 16 (App Router) + TypeScript strict |
+| 백엔드/DB/인증 | Supabase (Auth + PostgreSQL + RLS)          |
+| 스타일링       | Tailwind CSS v3 + shadcn/ui (new-york)      |
+| 폼/유효성 검사 | React Hook Form + Zod                       |
+| 날짜 처리      | date-fns                                    |
+| 알림           | sonner (Toast)                              |
+| E2E 테스트     | Playwright MCP                              |
 
 ### DB 스키마 (참고)
 
@@ -80,24 +80,29 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 # Task XXX: [제목]
 
 ## 개요
+
 - **목표:** [이 Task가 달성하려는 것]
 - **예상 소요 시간:** [시간]
 - **관련 기능:** [관련된 비즈니스 기능]
 - **의존성:** [선행 Task 번호]
 
 ## 구현 사항
+
 - [ ] 구현 항목 1
 - [ ] 구현 항목 2
 
 ## 수락 기준
+
 - [ ] 기준 1
 - [ ] 기준 2
 
 ## 테스트 체크리스트 (Playwright MCP)
+
 - [ ] 테스트 시나리오 1
 - [ ] 테스트 시나리오 2
 
 ## 관련 파일
+
 - `src/...`
 ```
 
@@ -120,7 +125,7 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 - [x] Task 006: 데이터베이스 스키마 및 Supabase 초기 설정
   - Supabase 마이그레이션 실제 적용 완료 (2026-03-19): hourly_rates, work_logs, payroll_summaries 테이블 생성, RLS 정책 전체 적용 (is_admin() 함수 포함)
 - [x] Task 007: 인증 시스템 및 권한 관리
-  - 관리자/근무자 역할 분기 수정 (2026-03-19): 관리자도 /worker/* 페이지 접근 가능, 헤더/사이드바에 "관리자 패널" 버튼 표시, Worker layout에 isAdmin prop 추가
+  - 관리자/근무자 역할 분기 수정 (2026-03-19): 관리자도 /worker/\* 페이지 접근 가능, 헤더/사이드바에 "관리자 패널" 버튼 표시, Worker layout에 isAdmin prop 추가
 
 ### Phase 3: UI/UX 완성 (실제 인증 컨텍스트 기반)
 
@@ -577,7 +582,7 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 - [x] 미들웨어 인증 가드 구현
   - 비로그인 사용자 → `/login` 리다이렉트
   - 근무자가 관리자 페이지 접근 → `/worker/dashboard` 리다이렉트
-  - ~~관리자가 근무자 페이지 접근 → `/admin/dashboard` 리다이렉트~~ → 관리자도 /worker/* 접근 허용 (2026-03-19 변경: 관리자는 근무자 페이지로 시작하되 헤더에 "관리자 패널" 버튼 표시)
+  - ~~관리자가 근무자 페이지 접근 → `/admin/dashboard` 리다이렉트~~ → 관리자도 /worker/\* 접근 허용 (2026-03-19 변경: 관리자는 근무자 페이지로 시작하되 헤더에 "관리자 패널" 버튼 표시)
 - [x] 로그인 후 역할에 따른 리다이렉트
 - [x] 로그아웃 처리 및 세션 정리
 - [x] Auth 콜백 페이지 (`/auth/callback`) — Google OAuth 전용
@@ -629,7 +634,7 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
     - 쿼리: `WHERE worker_id = ? AND role_type = ? AND effective_from <= work_date ORDER BY effective_from DESC LIMIT 1`
     - 시급이 없으면 에러 반환 (폼에서 미리 경고 표시 권장)
   - `applied_hourly_rate` 스냅샷 저장
-  - `calculated_pay` = duration_hours * applied_hourly_rate 계산 저장
+  - `calculated_pay` = duration_hours \* applied_hourly_rate 계산 저장
   - 상태 기본값: `pending`
   - **확정 월 차단**: 해당 월 `payroll_summaries.status = finalized`이면 저장 거부
 - [ ] 근무 기록 조회
@@ -1081,19 +1086,19 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 
 ## 기술 스택 체크리스트
 
-| 기술 | 도입 Phase | 상태 |
-|------|-----------|------|
-| Next.js 16 (App Router) | Phase 1 | [x] |
-| TypeScript strict | Phase 1 | [x] |
-| Tailwind CSS v3 | Phase 1 | [x] |
-| shadcn/ui (new-york) | Phase 1 | [x] |
-| Zod | Phase 1 | [x] |
-| React Hook Form | Phase 3 | [x] |
-| date-fns | Phase 3 | [x] |
-| sonner | Phase 3 | [x] |
-| Supabase (Auth + DB + RLS) | Phase 2 | [x] |
-| Playwright MCP | Phase 4 | [ ] |
-| Recharts / Chart.js | Phase 6 | [ ] |
+| 기술                       | 도입 Phase | 상태 |
+| -------------------------- | ---------- | ---- |
+| Next.js 16 (App Router)    | Phase 1    | [x]  |
+| TypeScript strict          | Phase 1    | [x]  |
+| Tailwind CSS v3            | Phase 1    | [x]  |
+| shadcn/ui (new-york)       | Phase 1    | [x]  |
+| Zod                        | Phase 1    | [x]  |
+| React Hook Form            | Phase 3    | [x]  |
+| date-fns                   | Phase 3    | [x]  |
+| sonner                     | Phase 3    | [x]  |
+| Supabase (Auth + DB + RLS) | Phase 2    | [x]  |
+| Playwright MCP             | Phase 4    | [ ]  |
+| Recharts / Chart.js        | Phase 6    | [ ]  |
 
 ---
 
@@ -1112,7 +1117,7 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 - [x] Supabase 테이블 4개 생성 및 UNIQUE/INDEX 적용 확인 — 마이그레이션 실제 적용 완료 (2026-03-19)
 - [x] RLS 정책이 역할별로 올바르게 동작함 — is_admin() 함수 포함 전체 적용 완료
 - [ ] DB trigger (profiles 자동 생성, 확정 월 보호) 동작 확인
-- [x] 인증 가드가 역할에 따라 올바르게 리다이렉트함 — 관리자도 /worker/* 접근 허용으로 변경
+- [x] 인증 가드가 역할에 따라 올바르게 리다이렉트함 — 관리자도 /worker/\* 접근 허용으로 변경
 - [ ] 근무자 계정 생성 (admin.createUser) 정상 동작
 
 ### Phase 3 완료 기준 (UI/UX)
@@ -1183,17 +1188,18 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 
 ### 잔여 작업 목록
 
-| 우선순위 | 작업 | 관련 Task |
-|---------|------|----------|
-| 1 | 성능 최적화 (서버/클라이언트 컴포넌트 분리 점검, Suspense 최적화) | Task 013 |
-| 2 | 대시보드 통계 및 차트 (관리자용) | Task 015 |
-| 3 | 포트폴리오 문서화 및 데모 데이터 준비 | Task 016 |
-| - | 근무 기록 입력 시 시급 미설정 처리 | Task 008 잔여 |
-| - | admin/workers 목록에서 role='worker' 필터 제거 (현재 모든 프로필 표시) | Task 008 잔여 |
+| 우선순위 | 작업                                                                   | 관련 Task     |
+| -------- | ---------------------------------------------------------------------- | ------------- |
+| 1        | 성능 최적화 (서버/클라이언트 컴포넌트 분리 점검, Suspense 최적화)      | Task 013      |
+| 2        | 대시보드 통계 및 차트 (관리자용)                                       | Task 015      |
+| 3        | 포트폴리오 문서화 및 데모 데이터 준비                                  | Task 016      |
+| -        | 근무 기록 입력 시 시급 미설정 처리                                     | Task 008 잔여 |
+| -        | admin/workers 목록에서 role='worker' 필터 제거 (현재 모든 프로필 표시) | Task 008 잔여 |
 
 ### 최근 완료 이력
 
 #### 2026-03-20
+
 - Task 011 핵심 기능 통합 테스트 완료 (플로우 A/B/C 전체 통과)
 - 날짜 버그 수정: `-31` 하드코딩 → 동적 계산 (영향 파일 11개)
 - PayrollTable.tsx 확정 취소 버튼 추가
@@ -1203,8 +1209,9 @@ payroll_summaries: id, worker_id, year, month, total_hours, total_pay,
 - **Phase 5 (MVP) 완료**
 
 #### 2026-03-19
+
 - Supabase 마이그레이션 실제 적용 (hourly_rates, work_logs, payroll_summaries + RLS)
-- 관리자/근무자 역할 분기 수정 (관리자도 /worker/* 접근 가능)
+- 관리자/근무자 역할 분기 수정 (관리자도 /worker/\* 접근 가능)
 - 시급 CRUD 완성 (등록/수정/삭제, HourlyRateManagerClient.tsx)
 - UI/UX 버그 수정 (달력 투명도, 기본 근무 시간, 서버 컴포넌트 import 오류)
 - 에러 메시지 디버깅 개선

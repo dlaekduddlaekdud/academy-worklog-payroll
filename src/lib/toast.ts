@@ -1,13 +1,13 @@
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 export function showSuccess(message: string, description?: string) {
-  toast.success(message, { description })
+  toast.success(message, { description });
 }
 
 export function showError(message: string, description?: string) {
-  toast.error(message, { description })
+  toast.error(message, { description });
 }
 
 export function showInfo(message: string, description?: string) {
-  toast.info(message, { description })
+  toast.info(message, { description });
 }
