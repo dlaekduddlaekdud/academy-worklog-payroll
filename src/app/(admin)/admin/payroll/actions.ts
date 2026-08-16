@@ -3,17 +3,12 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import {
-  upsertPayrollSummary,
-  getPayrollOverviews,
-} from "@/lib/services/payroll";
+import { upsertPayrollSummary, getPayrollOverviews } from "@/lib/services/payroll";
 import type { PayrollOverview } from "@/types";
 import type { ActionResult } from "@/app/(worker)/worker/work-logs/actions";
 
 // 관리자 권한 확인 + user_id 반환
-async function getAdminUserId(
-  supabase: Awaited<ReturnType<typeof createClient>>
-): Promise<string> {
+async function getAdminUserId(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -60,8 +55,7 @@ export async function calculatePayroll(
     revalidatePath("/admin/payroll");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
@@ -94,8 +88,7 @@ export async function finalizePayroll(
     revalidatePath("/worker/payroll");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
@@ -132,8 +125,7 @@ export async function bulkFinalizePayroll(
     if (successCount === 0) {
       return {
         success: false,
-        error:
-          "확정 가능한 근무자가 없습니다. 대기 중인 기록을 먼저 처리해주세요.",
+        error: "확정 가능한 근무자가 없습니다. 대기 중인 기록을 먼저 처리해주세요.",
       };
     }
 
@@ -149,8 +141,7 @@ export async function bulkFinalizePayroll(
 
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
@@ -183,8 +174,7 @@ export async function unfinalizePayroll(
     revalidatePath("/worker/payroll");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }

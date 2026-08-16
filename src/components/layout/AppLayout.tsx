@@ -1,28 +1,28 @@
-"use client"
+"use client";
 
-import { Sidebar } from "@/components/layout/Sidebar"
-import { Header } from "@/components/layout/Header"
-import { MobileNav } from "@/components/layout/MobileNav"
-import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
-import type { Role } from "@/types"
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Header } from "@/components/layout/Header";
+import { MobileNav } from "@/components/layout/MobileNav";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import type { Role } from "@/types";
 
 interface AppLayoutProps {
-  role: Role
-  userName: string
-  isAdmin?: boolean
-  children: React.ReactNode
+  role: Role;
+  userName: string;
+  isAdmin?: boolean;
+  children: React.ReactNode;
 }
 
 // Server Layout에서 props를 받아 클라이언트 로그아웃 처리를 담당
 export function AppLayout({ role, userName, isAdmin = false, children }: AppLayoutProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -45,5 +45,5 @@ export function AppLayout({ role, userName, isAdmin = false, children }: AppLayo
         </div>
       </div>
     </div>
-  )
+  );
 }

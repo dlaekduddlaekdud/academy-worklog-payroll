@@ -68,21 +68,21 @@ grep -r "hero" --include="*.tsx" --include="*.ts" app/ components/
 
 아래 파일은 **절대 수정/삭제하지 않는다**:
 
-| 파일/디렉토리 | 이유 |
-|---------------|------|
-| `proxy.ts` | Next.js 16 세션 검증 핵심 파일 |
-| `lib/supabase/client.ts` | 브라우저 Supabase 클라이언트 |
-| `lib/supabase/server.ts` | 서버 Supabase 클라이언트 |
-| `lib/supabase/proxy.ts` | proxy용 Supabase 클라이언트 |
-| `ROADMAP.md` | 프로젝트 로드맵 (절대 수정 금지) |
-| `tasks/` | 태스크 파일 디렉토리 |
-| `CLAUDE.md` | 프로젝트 컨텍스트 (업데이트는 가능) |
-| `.env.local` | 환경 변수 |
-| `.claude/` | Claude 설정 디렉토리 |
-| `tailwind.config.ts` | Tailwind 설정 |
-| `next.config.ts` | Next.js 설정 |
-| `tsconfig.json` | TypeScript 설정 |
-| `package.json` | 의존성 관리 |
+| 파일/디렉토리            | 이유                                |
+| ------------------------ | ----------------------------------- |
+| `proxy.ts`               | Next.js 16 세션 검증 핵심 파일      |
+| `lib/supabase/client.ts` | 브라우저 Supabase 클라이언트        |
+| `lib/supabase/server.ts` | 서버 Supabase 클라이언트            |
+| `lib/supabase/proxy.ts`  | proxy용 Supabase 클라이언트         |
+| `ROADMAP.md`             | 프로젝트 로드맵 (절대 수정 금지)    |
+| `tasks/`                 | 태스크 파일 디렉토리                |
+| `CLAUDE.md`              | 프로젝트 컨텍스트 (업데이트는 가능) |
+| `.env.local`             | 환경 변수                           |
+| `.claude/`               | Claude 설정 디렉토리                |
+| `tailwind.config.ts`     | Tailwind 설정                       |
+| `next.config.ts`         | Next.js 설정                        |
+| `tsconfig.json`          | TypeScript 설정                     |
+| `package.json`           | 의존성 관리                         |
 
 ---
 
@@ -96,15 +96,18 @@ grep -r "hero" --include="*.tsx" --include="*.ts" app/ components/
 학원 근무자(조교/코칭) 근무 기록 및 역할별 급여 계산 웹 서비스.
 
 ## 기술 스택
+
 - Next.js 16 (App Router, proxy.ts 세션관리)
 - TypeScript strict
 - Supabase (Auth + PostgreSQL + RLS)
 - Tailwind CSS v3, shadcn/ui (new-york)
 
 ## 주요 테이블
+
 - profiles, hourly_rates, work_logs, payroll_summaries
 
 ## 개발 가이드
+
 - docs/guides/ 디렉토리의 가이드 문서 참조
 - ROADMAP.md의 Phase 구조에 따라 개발
 - tasks/ 디렉토리의 태스크 파일 참조
@@ -152,11 +155,11 @@ http://localhost:3000 에서 확인.
 
 \`\`\`
 src/app/
-├── login/         # 로그인 페이지
-├── auth/          # Auth 콜백
-├── (worker)/      # 근무자 전용 (근무기록, 내급여)
-├── (admin)/       # 관리자 전용 (근무자관리, 승인, 정산)
-└── page.tsx       # 루트 (역할별 리다이렉트)
+├── login/ # 로그인 페이지
+├── auth/ # Auth 콜백
+├── (worker)/ # 근무자 전용 (근무기록, 내급여)
+├── (admin)/ # 관리자 전용 (근무자관리, 승인, 정산)
+└── page.tsx # 루트 (역할별 리다이렉트)
 \`\`\`
 ```
 

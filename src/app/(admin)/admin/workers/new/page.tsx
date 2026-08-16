@@ -18,18 +18,14 @@ export default function NewWorkerPage() {
           <li>근무자가 본인의 Google 계정으로 로그인합니다.</li>
           <li>
             로그인 후 자동으로 근무자 계정이 생성되며,{" "}
-            <span className="text-foreground font-medium">근무자 목록</span>
-            에 나타납니다.
+            <span className="text-foreground font-medium">근무자 목록</span>에 나타납니다.
           </li>
           <li>시급은 근무자 목록에서 설정할 수 있습니다.</li>
         </ol>
       </div>
 
       <div className="mt-6">
-        <Link
-          href="/admin/workers"
-          className="text-sm text-primary underline underline-offset-4"
-        >
+        <Link href="/admin/workers" className="text-sm text-primary underline underline-offset-4">
           ← 근무자 목록으로 돌아가기
         </Link>
       </div>

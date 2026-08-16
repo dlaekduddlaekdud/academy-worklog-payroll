@@ -9,14 +9,9 @@ export function generatePayrollCsv(
   year: number,
   month: number
 ): string {
-  const header = [
-    "이름",
-    "총 근무시간",
-    "총 급여",
-    "승인 건수",
-    "대기 건수",
-    "정산 상태",
-  ].join(",");
+  const header = ["이름", "총 근무시간", "총 급여", "승인 건수", "대기 건수", "정산 상태"].join(
+    ","
+  );
 
   const rows = overviews.map((o) => {
     const status = o.status === "finalized" ? "확정" : "초안";
@@ -38,9 +33,6 @@ export function generatePayrollCsv(
 }
 
 // CSV 파일명 생성
-export function generatePayrollCsvFilename(
-  year: number,
-  month: number
-): string {
+export function generatePayrollCsvFilename(year: number, month: number): string {
   return `급여정산_${year}년_${month}월.csv`;
 }

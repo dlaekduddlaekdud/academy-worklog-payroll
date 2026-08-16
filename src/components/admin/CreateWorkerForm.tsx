@@ -67,11 +67,7 @@ export function CreateWorkerForm() {
             <FormItem>
               <FormLabel>이메일</FormLabel>
               <FormControl>
-                <Input
-                  type="email"
-                  placeholder="worker@academy.com"
-                  {...field}
-                />
+                <Input type="email" placeholder="worker@academy.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -92,9 +88,7 @@ export function CreateWorkerForm() {
           )}
         />
 
-        {errorMessage && (
-          <p className="text-sm text-destructive">{errorMessage}</p>
-        )}
+        {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
 
         <div className="flex gap-2">
           <Button type="submit" disabled={isSubmitting}>

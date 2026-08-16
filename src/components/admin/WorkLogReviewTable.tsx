@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
-import { Check, X, ClipboardCheck } from "lucide-react"
+import { useState } from "react";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { Check, X, ClipboardCheck } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,20 +11,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { StatusBadge, RoleBadge } from "@/components/common/StatusBadge"
-import { EmptyState } from "@/components/common/EmptyState"
-import { RejectionDialog } from "@/components/admin/RejectionDialog"
-import type { WorkLog, WorkerSummary } from "@/types"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { StatusBadge, RoleBadge } from "@/components/common/StatusBadge";
+import { EmptyState } from "@/components/common/EmptyState";
+import { RejectionDialog } from "@/components/admin/RejectionDialog";
+import type { WorkLog, WorkerSummary } from "@/types";
 
 interface WorkLogReviewTableProps {
-  logs: WorkLog[]
-  profiles: WorkerSummary[]
-  onApprove: (id: string) => void
-  onReject: (id: string, reason: string) => void
-  onBulkApprove: (ids: string[]) => void
+  logs: WorkLog[];
+  profiles: WorkerSummary[];
+  onApprove: (id: string) => void;
+  onReject: (id: string, reason: string) => void;
+  onBulkApprove: (ids: string[]) => void;
 }
 
 export function WorkLogReviewTable({
@@ -34,50 +34,49 @@ export function WorkLogReviewTable({
   onReject,
   onBulkApprove,
 }: WorkLogReviewTableProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [rejectingId, setRejectingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
 
-  const pendingLogs = logs.filter((log) => log.status === "pending")
+  const pendingLogs = logs.filter((log) => log.status === "pending");
 
   const getWorkerName = (workerId: string) => {
-    return profiles.find((p) => p.userId === workerId)?.name ?? "알 수 없음"
-  }
+    return profiles.find((p) => p.userId === workerId)?.name ?? "알 수 없음";
+  };
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
-      const next = new Set(prev)
+      const next = new Set(prev);
       if (next.has(id)) {
-        next.delete(id)
+        next.delete(id);
       } else {
-        next.add(id)
+        next.add(id);
       }
-      return next
-    })
-  }
+      return next;
+    });
+  };
 
   const toggleSelectAll = () => {
-    const pendingIds = pendingLogs.map((l) => l.id)
+    const pendingIds = pendingLogs.map((l) => l.id);
     if (selectedIds.size === pendingIds.length) {
-      setSelectedIds(new Set())
+      setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(pendingIds))
+      setSelectedIds(new Set(pendingIds));
     }
-  }
+  };
 
   const handleBulkApprove = () => {
-    onBulkApprove(Array.from(selectedIds))
-    setSelectedIds(new Set())
-  }
+    onBulkApprove(Array.from(selectedIds));
+    setSelectedIds(new Set());
+  };
 
   const handleRejectConfirm = (reason: string) => {
     if (rejectingId) {
-      onReject(rejectingId, reason)
-      setRejectingId(null)
+      onReject(rejectingId, reason);
+      setRejectingId(null);
     }
-  }
+  };
 
-  const isAllSelected =
-    pendingLogs.length > 0 && selectedIds.size === pendingLogs.length
+  const isAllSelected = pendingLogs.length > 0 && selectedIds.size === pendingLogs.length;
 
   if (logs.length === 0) {
     return (
@@ -86,7 +85,7 @@ export function WorkLogReviewTable({
         description="해당 기간에 검토할 근무 기록이 없습니다."
         icon={<ClipboardCheck className="h-6 w-6" />}
       />
-    )
+    );
   }
 
   return (
@@ -94,9 +93,7 @@ export function WorkLogReviewTable({
       {/* 일괄 승인 버튼 */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 rounded-md border bg-muted/50 px-4 py-2">
-          <span className="text-sm text-muted-foreground">
-            {selectedIds.size}건 선택됨
-          </span>
+          <span className="text-sm text-muted-foreground">{selectedIds.size}건 선택됨</span>
           <Button size="sm" onClick={handleBulkApprove}>
             <Check className="mr-1.5 h-4 w-4" />
             선택 승인
@@ -137,19 +134,13 @@ export function WorkLogReviewTable({
                     />
                   )}
                 </TableCell>
-                <TableCell className="font-medium">
-                  {getWorkerName(log.workerId)}
-                </TableCell>
-                <TableCell>
-                  {format(new Date(log.workDate), "M/d (EEE)", { locale: ko })}
-                </TableCell>
+                <TableCell className="font-medium">{getWorkerName(log.workerId)}</TableCell>
+                <TableCell>{format(new Date(log.workDate), "M/d (EEE)", { locale: ko })}</TableCell>
                 <TableCell>
                   <span className="text-sm">
                     {log.startTime}~{log.endTime}
                   </span>
-                  <span className="ml-1 text-xs text-muted-foreground">
-                    ({log.durationHours}h)
-                  </span>
+                  <span className="ml-1 text-xs text-muted-foreground">({log.durationHours}h)</span>
                 </TableCell>
                 <TableCell>
                   <RoleBadge roleType={log.roleType} />
@@ -196,5 +187,5 @@ export function WorkLogReviewTable({
         onConfirm={handleRejectConfirm}
       />
     </>
-  )
+  );
 }

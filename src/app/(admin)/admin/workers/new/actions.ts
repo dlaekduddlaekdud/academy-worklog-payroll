@@ -28,16 +28,15 @@ export async function createWorkerAction(data: CreateWorkerValues) {
 
   // service_role 클라이언트로 auth.users에 계정 생성
   const serviceClient = createServiceRoleClient();
-  const { data: newUser, error: createError } =
-    await serviceClient.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
-      email_confirm: true,
-      user_metadata: {
-        name: data.name,
-        role: "worker",
-      },
-    });
+  const { data: newUser, error: createError } = await serviceClient.auth.admin.createUser({
+    email: data.email,
+    password: data.password,
+    email_confirm: true,
+    user_metadata: {
+      name: data.name,
+      role: "worker",
+    },
+  });
 
   if (createError) {
     if (createError.message.includes("already registered")) {
@@ -47,15 +46,13 @@ export async function createWorkerAction(data: CreateWorkerValues) {
   }
 
   // auth 트리거가 profiles를 자동 생성하지만, 혹시 누락 시 직접 upsert
-  const { error: profileError } = await serviceClient
-    .from("profiles")
-    .upsert({
-      user_id: newUser.user.id,
-      email: data.email,
-      name: data.name,
-      role: "worker" as const,
-      is_active: true,
-    });
+  const { error: profileError } = await serviceClient.from("profiles").upsert({
+    user_id: newUser.user.id,
+    email: data.email,
+    name: data.name,
+    role: "worker" as const,
+    is_active: true,
+  });
 
   if (profileError) {
     throw new Error("프로필 생성에 실패했습니다.");

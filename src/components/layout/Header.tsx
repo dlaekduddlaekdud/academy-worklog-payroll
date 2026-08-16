@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { LogOut, User, Shield } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import type { Role } from "@/types"
+import Link from "next/link";
+import { LogOut, User, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import type { Role } from "@/types";
 
 interface HeaderProps {
-  userName: string
-  role: Role
-  isAdmin?: boolean
-  onLogout: () => void
+  userName: string;
+  role: Role;
+  isAdmin?: boolean;
+  onLogout: () => void;
 }
 
 export function Header({ userName, role, isAdmin = false, onLogout }: HeaderProps) {
@@ -47,5 +47,5 @@ export function Header({ userName, role, isAdmin = false, onLogout }: HeaderProp
         </Button>
       </div>
     </header>
-  )
+  );
 }

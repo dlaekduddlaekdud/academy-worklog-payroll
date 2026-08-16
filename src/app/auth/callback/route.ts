@@ -36,13 +36,9 @@ export async function GET(request: Request) {
   if (!profile?.name) {
     const { data: userData } = await supabase.auth.getUser();
     const meta = userData?.user?.user_metadata;
-    const googleName =
-      meta?.name ?? meta?.full_name ?? meta?.given_name ?? null;
+    const googleName = meta?.name ?? meta?.full_name ?? meta?.given_name ?? null;
     if (googleName) {
-      await supabase
-        .from("profiles")
-        .update({ name: googleName })
-        .eq("user_id", userId);
+      await supabase.from("profiles").update({ name: googleName }).eq("user_id", userId);
     }
   }
 

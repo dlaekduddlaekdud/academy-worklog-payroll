@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { AlertCircle } from "lucide-react"
+import { useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
 
 interface ErrorProps {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    console.error(error)
-  }, [error])
+    console.error(error);
+  }, [error]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
@@ -25,9 +25,7 @@ export default function Error({ error, reset }: ErrorProps) {
         <p className="text-muted-foreground">
           예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
         </p>
-        {error.digest && (
-          <p className="text-xs text-muted-foreground">오류 코드: {error.digest}</p>
-        )}
+        {error.digest && <p className="text-xs text-muted-foreground">오류 코드: {error.digest}</p>}
       </div>
       <div className="flex gap-3">
         <Button onClick={reset}>다시 시도</Button>
@@ -39,5 +37,5 @@ export default function Error({ error, reset }: ErrorProps) {
         </Link>
       </div>
     </div>
-  )
+  );
 }

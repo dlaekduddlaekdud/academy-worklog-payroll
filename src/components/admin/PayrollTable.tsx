@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Lock, Download, CheckCheck, ReceiptText } from "lucide-react"
+import { useState } from "react";
+import { Lock, Download, CheckCheck, ReceiptText } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -9,20 +9,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { StatusBadge } from "@/components/common/StatusBadge"
-import { EmptyState } from "@/components/common/EmptyState"
-import { cn } from "@/lib/utils"
-import type { PayrollOverview } from "@/types"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { EmptyState } from "@/components/common/EmptyState";
+import { cn } from "@/lib/utils";
+import type { PayrollOverview } from "@/types";
 
 interface PayrollTableProps {
-  overviews: PayrollOverview[]
-  onFinalize: (workerId: string) => void
-  onUnfinalize: (workerId: string) => void
-  onBulkFinalize: (workerIds: string[]) => void
-  onDownloadCsv: () => void
+  overviews: PayrollOverview[];
+  onFinalize: (workerId: string) => void;
+  onUnfinalize: (workerId: string) => void;
+  onBulkFinalize: (workerIds: string[]) => void;
+  onDownloadCsv: () => void;
 }
 
 export function PayrollTable({
@@ -32,38 +32,37 @@ export function PayrollTable({
   onBulkFinalize,
   onDownloadCsv,
 }: PayrollTableProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const draftOverviews = overviews.filter((o) => o.status === "draft")
+  const draftOverviews = overviews.filter((o) => o.status === "draft");
 
   const toggleSelect = (workerId: string) => {
     setSelectedIds((prev) => {
-      const next = new Set(prev)
+      const next = new Set(prev);
       if (next.has(workerId)) {
-        next.delete(workerId)
+        next.delete(workerId);
       } else {
-        next.add(workerId)
+        next.add(workerId);
       }
-      return next
-    })
-  }
+      return next;
+    });
+  };
 
   const toggleSelectAll = () => {
-    const draftIds = draftOverviews.map((o) => o.workerId)
+    const draftIds = draftOverviews.map((o) => o.workerId);
     if (selectedIds.size === draftIds.length) {
-      setSelectedIds(new Set())
+      setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(draftIds))
+      setSelectedIds(new Set(draftIds));
     }
-  }
+  };
 
   const handleBulkFinalize = () => {
-    onBulkFinalize(Array.from(selectedIds))
-    setSelectedIds(new Set())
-  }
+    onBulkFinalize(Array.from(selectedIds));
+    setSelectedIds(new Set());
+  };
 
-  const isAllSelected =
-    draftOverviews.length > 0 && selectedIds.size === draftOverviews.length
+  const isAllSelected = draftOverviews.length > 0 && selectedIds.size === draftOverviews.length;
 
   if (overviews.length === 0) {
     return (
@@ -72,7 +71,7 @@ export function PayrollTable({
         description="해당 월에 승인된 근무 기록이 없거나 아직 집계되지 않았습니다. 근무 기록을 승인한 후 확인해주세요."
         icon={<ReceiptText className="h-6 w-6" />}
       />
-    )
+    );
   }
 
   return (
@@ -81,9 +80,7 @@ export function PayrollTable({
       <div className="flex items-center justify-between">
         {selectedIds.size > 0 ? (
           <div className="flex items-center gap-3 rounded-md border bg-muted/50 px-4 py-2">
-            <span className="text-sm text-muted-foreground">
-              {selectedIds.size}명 선택됨
-            </span>
+            <span className="text-sm text-muted-foreground">{selectedIds.size}명 선택됨</span>
             <Button size="sm" onClick={handleBulkFinalize}>
               <CheckCheck className="mr-1.5 h-4 w-4" />
               선택 확정
@@ -123,9 +120,7 @@ export function PayrollTable({
             {overviews.map((overview) => (
               <TableRow
                 key={overview.workerId}
-                className={cn(
-                  overview.status === "finalized" && "bg-blue-50/50"
-                )}
+                className={cn(overview.status === "finalized" && "bg-blue-50/50")}
               >
                 <TableCell>
                   {overview.status === "draft" && (
@@ -173,7 +168,9 @@ export function PayrollTable({
                         className="h-7 text-xs"
                         onClick={() => onFinalize(overview.workerId)}
                         disabled={overview.pendingLogCount > 0}
-                        title={overview.pendingLogCount > 0 ? "대기 중인 기록이 있습니다" : undefined}
+                        title={
+                          overview.pendingLogCount > 0 ? "대기 중인 기록이 있습니다" : undefined
+                        }
                       >
                         급여 확정
                       </Button>
@@ -186,5 +183,5 @@ export function PayrollTable({
         </Table>
       </div>
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
-import { ChevronDown, ChevronUp, Pencil, Plus, Trash2, ClipboardList } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { ChevronDown, ChevronUp, Pencil, Plus, Trash2, ClipboardList } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,33 +12,33 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { StatusBadge, RoleBadge } from "@/components/common/StatusBadge"
-import { EmptyState } from "@/components/common/EmptyState"
-import type { WorkLog } from "@/types"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { StatusBadge, RoleBadge } from "@/components/common/StatusBadge";
+import { EmptyState } from "@/components/common/EmptyState";
+import type { WorkLog } from "@/types";
 
 interface WorkLogTableProps {
-  logs: WorkLog[]
-  onEdit?: (log: WorkLog) => void
-  onDelete?: (id: string) => void
+  logs: WorkLog[];
+  onEdit?: (log: WorkLog) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function WorkLogTable({ logs, onEdit, onDelete }: WorkLogTableProps) {
   // 반려 사유 펼침 상태
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
-      const next = new Set(prev)
+      const next = new Set(prev);
       if (next.has(id)) {
-        next.delete(id)
+        next.delete(id);
       } else {
-        next.add(id)
+        next.add(id);
       }
-      return next
-    })
-  }
+      return next;
+    });
+  };
 
   if (logs.length === 0) {
     return (
@@ -56,7 +56,7 @@ export function WorkLogTable({ logs, onEdit, onDelete }: WorkLogTableProps) {
           </Link>
         }
       />
-    )
+    );
   }
 
   return (
@@ -81,7 +81,9 @@ export function WorkLogTable({ logs, onEdit, onDelete }: WorkLogTableProps) {
                   {format(new Date(log.workDate), "M월 d일 (EEE)", { locale: ko })}
                 </TableCell>
                 <TableCell>
-                  <span>{log.startTime} ~ {log.endTime}</span>
+                  <span>
+                    {log.startTime} ~ {log.endTime}
+                  </span>
                   <span className="ml-1.5 text-xs text-muted-foreground">
                     ({log.durationHours}h)
                   </span>
@@ -152,22 +154,20 @@ export function WorkLogTable({ logs, onEdit, onDelete }: WorkLogTableProps) {
               </TableRow>
 
               {/* 반려 사유 펼침 행 */}
-              {log.status === "rejected" &&
-                log.rejectionReason &&
-                expandedIds.has(log.id) && (
-                  <TableRow key={`${log.id}-reason`} className="bg-red-50/50 hover:bg-red-50/50">
-                    <TableCell colSpan={7}>
-                      <div className="px-2 py-1">
-                        <p className="text-xs font-medium text-red-700">반려 사유</p>
-                        <p className="mt-0.5 text-sm text-red-600">{log.rejectionReason}</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
+              {log.status === "rejected" && log.rejectionReason && expandedIds.has(log.id) && (
+                <TableRow key={`${log.id}-reason`} className="bg-red-50/50 hover:bg-red-50/50">
+                  <TableCell colSpan={7}>
+                    <div className="px-2 py-1">
+                      <p className="text-xs font-medium text-red-700">반려 사유</p>
+                      <p className="mt-0.5 text-sm text-red-600">{log.rejectionReason}</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </>
           ))}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

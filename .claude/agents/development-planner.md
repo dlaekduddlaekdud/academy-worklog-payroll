@@ -65,11 +65,12 @@ Phase 2(인프라)를 Phase 3(UI) 전에 배치하는 이유:
 ## ROADMAP.md 상태 표시 형식
 
 ```markdown
-- [ ] Task 001: 프로젝트 구조 및 라우팅 설정   ← 미완료 (대기 또는 진행 중)
-- [x] Task 001: 프로젝트 구조 및 라우팅 설정   ← 완료
+- [ ] Task 001: 프로젝트 구조 및 라우팅 설정 ← 미완료 (대기 또는 진행 중)
+- [x] Task 001: 프로젝트 구조 및 라우팅 설정 ← 완료
 ```
 
 **규칙:**
+
 - `- [ ]` / `- [x]` 형식만 사용 (체크박스 마크다운)
 - 완료 표시는 실제로 구현이 확인된 경우에만 적용 (추측 금지, 코드 확인 필수)
 
@@ -93,25 +94,30 @@ tasks/
 # Task XXX: [제목]
 
 ## 개요
+
 - **목표:** [이 Task가 달성하려는 것]
 - **예상 소요 시간:** [시간]
 - **관련 기능:** [관련된 비즈니스 기능]
 - **의존성:** [선행 Task 번호]
 
 ## 구현 사항
+
 - [ ] 구현 항목 1
 - [ ] 구현 항목 2
 
 ## 수락 기준
+
 - [ ] 기준 1
 - [ ] 기준 2
 - [ ] npm run check 통과
 
 ## 테스트 체크리스트 (Playwright MCP)
+
 - [ ] 테스트 시나리오 1
 - [ ] 테스트 시나리오 2
 
 ## 관련 파일
+
 - `src/...`
 - `src/...`
 ```
@@ -122,12 +128,14 @@ tasks/
 # Task 008: 근무 기록 CRUD 및 시급 적용 로직
 
 ## 개요
+
 - **목표:** 근무자가 근무 기록을 제출하면 유효 시급이 자동 스냅샷 저장되는 CRUD 흐름 완성
 - **예상 소요 시간:** 4-6시간
 - **관련 기능:** 근무 기록 제출, 수정, 삭제, 시급 스냅샷
 - **의존성:** Task 006 (DB 스키마), Task 007 (인증), Task 004 (근무자 UI)
 
 ## 구현 사항
+
 - [ ] Server Action: submitWorkLog (시급 스냅샷 포함)
 - [ ] Server Action: updateWorkLog (rejected → pending 재제출)
 - [ ] Server Action: deleteWorkLog (pending 상태만 가능)
@@ -135,20 +143,23 @@ tasks/
 - [ ] 급여 계산: calculatePay(durationHours, hourlyRate)
 
 ## 수락 기준
+
 - [ ] applied_hourly_rate가 work_date 기준 유효 시급으로 저장됨
-- [ ] calculated_pay = duration_hours * applied_hourly_rate로 정확히 계산됨
+- [ ] calculated_pay = duration_hours \* applied_hourly_rate로 정확히 계산됨
 - [ ] applied_hourly_rate, calculated_pay가 null이 아님
 - [ ] 확정 월에 대한 기록 생성/수정/삭제가 차단됨
 - [ ] pending 상태만 삭제 가능
 - [ ] npm run check 통과
 
 ## 테스트 체크리스트 (Playwright MCP)
+
 - [ ] 근무 기록 제출 → applied_hourly_rate 자동 저장 확인
 - [ ] rejected 상태 기록 재제출 → pending으로 전이 확인
 - [ ] pending 상태 기록 삭제 성공 확인
 - [ ] approved 상태 기록 삭제 차단 확인
 
 ## 관련 파일
+
 - `src/app/(worker)/worker/work-logs/actions.ts`
 - `src/lib/services/work-log.ts`
 - `src/lib/utils/pay-calculator.ts`
@@ -181,11 +192,13 @@ tasks/
 E2E 테스트(Task 011)에서 반드시 포함해야 할 시나리오:
 
 ### 근무 기록 CRUD
+
 - 근무 기록 생성 → applied_hourly_rate 자동 저장 확인
 - 근무 기록 수정 (pending 상태)
 - 근무 기록 삭제 (pending 상태만 가능)
 
 ### 승인/반려 흐름
+
 - pending → approved 전이
 - pending → rejected 전이 (반려 사유 확인)
 - rejected → pending 재제출
@@ -193,12 +206,14 @@ E2E 테스트(Task 011)에서 반드시 포함해야 할 시나리오:
 - finalized 월의 승인 취소 차단 확인
 
 ### 정산 흐름
+
 - draft → finalized 확정
 - finalized 후 해당 월 근무 기록 수정 차단 확인
 - finalized 후 해당 월 승인 취소 차단 확인
 - 정산 금액 = approved 근무 기록 합산 확인
 
 ### Playwright MCP 도구
+
 - `mcp__playwright__browser_navigate`: 페이지 이동
 - `mcp__playwright__browser_fill_form`: 폼 입력
 - `mcp__playwright__browser_click`: 버튼 클릭

@@ -28,6 +28,7 @@ model: sonnet
 ## Tailwind v3 규칙
 
 **사용 가능:**
+
 ```css
 @tailwind base;
 @tailwind components;
@@ -35,10 +36,12 @@ model: sonnet
 ```
 
 **절대 금지 (v4 문법):**
+
 ```css
 /* 아래는 Tailwind v4 전용이므로 사용 금지 */
 @import "tailwindcss";
-@theme { }
+@theme {
+}
 ```
 
 - tailwind.config.ts 파일에서 설정 관리
@@ -87,6 +90,7 @@ src/components/
 - **비즈니스 로직**: 시급 계산, 상태 전이 등은 nextjs-supabase-expert 영역
 
 **폼 관련 담당 범위:**
+
 - 폼 구조(RHF 연결 + Zod 스키마 정의)까지는 담당
 - Server Action 직접 호출은 금지
 - onSubmit/onApprove 등 콜백은 props로 받음
@@ -618,14 +622,14 @@ export function PayrollTable({
 
 ## 색상 규칙 (뱃지/상태 일관성)
 
-| 항목 | 색상 | Tailwind 클래스 |
-|------|------|-----------------|
-| 조교 (assistant) | 파랑 | `bg-blue-100 text-blue-800` |
-| 코칭 (coaching) | 초록 | `bg-green-100 text-green-800` |
-| 대기 (pending) | 노랑 | `bg-yellow-100 text-yellow-800` |
-| 승인 (approved) | 초록 | `bg-green-100 text-green-800` |
-| 반려 (rejected) | 빨강 | `bg-red-100 text-red-800` |
-| 임시 (draft) | 회색 | `bg-gray-100 text-gray-800` |
+| 항목             | 색상 | Tailwind 클래스                 |
+| ---------------- | ---- | ------------------------------- |
+| 조교 (assistant) | 파랑 | `bg-blue-100 text-blue-800`     |
+| 코칭 (coaching)  | 초록 | `bg-green-100 text-green-800`   |
+| 대기 (pending)   | 노랑 | `bg-yellow-100 text-yellow-800` |
+| 승인 (approved)  | 초록 | `bg-green-100 text-green-800`   |
+| 반려 (rejected)  | 빨강 | `bg-red-100 text-red-800`       |
+| 임시 (draft)     | 회색 | `bg-gray-100 text-gray-800`     |
 | 확정 (finalized) | 보라 | `bg-purple-100 text-purple-800` |
 
 ---

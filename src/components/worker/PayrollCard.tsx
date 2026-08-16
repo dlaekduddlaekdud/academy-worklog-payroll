@@ -1,11 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { StatusBadge } from "@/components/common/StatusBadge"
-import { Clock, DollarSign, Calendar } from "lucide-react"
-import type { PayrollSummary } from "@/types"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { Clock, DollarSign, Calendar } from "lucide-react";
+import type { PayrollSummary } from "@/types";
 
 interface PayrollCardProps {
-  summary: PayrollSummary
-  workerName: string
+  summary: PayrollSummary;
+  workerName: string;
 }
 
 export function PayrollCard({ summary, workerName }: PayrollCardProps) {
@@ -34,16 +34,14 @@ export function PayrollCard({ summary, workerName }: PayrollCardProps) {
 
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              총 근무시간
+              <Clock className="h-3.5 w-3.5" />총 근무시간
             </div>
             <p className="text-sm font-medium">{summary.totalHours}시간</p>
           </div>
 
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <DollarSign className="h-3.5 w-3.5" />
-              총 급여
+              <DollarSign className="h-3.5 w-3.5" />총 급여
             </div>
             <p className="text-lg font-bold">{summary.totalPay.toLocaleString()}원</p>
           </div>
@@ -56,5 +54,5 @@ export function PayrollCard({ summary, workerName }: PayrollCardProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

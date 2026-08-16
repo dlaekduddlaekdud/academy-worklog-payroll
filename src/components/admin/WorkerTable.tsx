@@ -1,5 +1,5 @@
-import Link from "next/link"
-import { AlertTriangle } from "lucide-react"
+import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -7,15 +7,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { buttonVariants } from "@/components/ui/button-variants"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import type { WorkerSummary, HourlyRate } from "@/types"
+} from "@/components/ui/table";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import type { WorkerSummary, HourlyRate } from "@/types";
 
 interface WorkerTableProps {
-  workers: WorkerSummary[]
-  hourlyRates: HourlyRate[]
+  workers: WorkerSummary[];
+  hourlyRates: HourlyRate[];
 }
 
 // 특정 근무자의 최신 시급 조회
@@ -27,11 +27,11 @@ function getLatestRate(
   const workerRates = rates
     .filter((r) => r.workerId === workerId && r.roleType === roleType)
     .sort((a, b) => {
-      const dateDiff = new Date(b.effectiveFrom).getTime() - new Date(a.effectiveFrom).getTime()
-      if (dateDiff !== 0) return dateDiff
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    })
-  return workerRates[0]?.rate ?? null
+      const dateDiff = new Date(b.effectiveFrom).getTime() - new Date(a.effectiveFrom).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  return workerRates[0]?.rate ?? null;
 }
 
 export function WorkerTable({ workers, hourlyRates }: WorkerTableProps) {
@@ -50,9 +50,9 @@ export function WorkerTable({ workers, hourlyRates }: WorkerTableProps) {
         </TableHeader>
         <TableBody>
           {workers.map((worker) => {
-            const assistantRate = getLatestRate(worker.userId, "assistant", hourlyRates)
-            const coachingRate = getLatestRate(worker.userId, "coaching", hourlyRates)
-            const hasRateMissing = assistantRate === null && coachingRate === null
+            const assistantRate = getLatestRate(worker.userId, "assistant", hourlyRates);
+            const coachingRate = getLatestRate(worker.userId, "coaching", hourlyRates);
+            const hasRateMissing = assistantRate === null && coachingRate === null;
 
             return (
               <TableRow key={worker.userId}>
@@ -100,10 +100,10 @@ export function WorkerTable({ workers, hourlyRates }: WorkerTableProps) {
                   </Link>
                 </TableCell>
               </TableRow>
-            )
+            );
           })}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

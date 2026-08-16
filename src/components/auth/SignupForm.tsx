@@ -55,9 +55,7 @@ export function SignupForm() {
         setErrorMessage("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");
       }
     } else {
-      setSuccessMessage(
-        "가입이 완료되었습니다. 이메일 인증 후 로그인해주세요."
-      );
+      setSuccessMessage("가입이 완료되었습니다. 이메일 인증 후 로그인해주세요.");
       setTimeout(() => router.push("/login"), 3000);
     }
   }
@@ -73,9 +71,7 @@ export function SignupForm() {
             학원 근무 관리
           </p>
           <CardTitle className="text-2xl font-bold">회원가입</CardTitle>
-          <CardDescription className="text-sm">
-            새 계정을 만드세요
-          </CardDescription>
+          <CardDescription className="text-sm">새 계정을 만드세요</CardDescription>
         </div>
       </CardHeader>
 
@@ -101,9 +97,7 @@ export function SignupForm() {
               autoComplete="name"
               {...register("name")}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -115,9 +109,7 @@ export function SignupForm() {
               autoComplete="email"
               {...register("email")}
             />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -134,11 +126,7 @@ export function SignupForm() {
             )}
           </div>
 
-          <Button
-            type="submit"
-            className="h-11 w-full"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
             {isSubmitting ? "가입 중..." : "회원가입"}
           </Button>
         </form>
@@ -147,7 +135,10 @@ export function SignupForm() {
       <CardFooter className="justify-center px-8 pb-8">
         <p className="text-center text-xs text-muted-foreground">
           이미 계정이 있으신가요?{" "}
-          <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
+          <Link
+            href="/login"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
             로그인
           </Link>
         </p>

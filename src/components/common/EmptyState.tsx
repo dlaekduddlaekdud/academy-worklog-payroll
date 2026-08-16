@@ -1,21 +1,15 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface EmptyStateProps {
-  title: string
-  description?: string
-  action?: React.ReactNode
-  icon?: React.ReactNode
-  className?: string
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  icon?: React.ReactNode;
+  className?: string;
 }
 
-export function EmptyState({
-  title,
-  description,
-  action,
-  icon,
-  className,
-}: EmptyStateProps) {
+export function EmptyState({ title, description, action, icon, className }: EmptyStateProps) {
   return (
     <div
       className={cn(
@@ -29,10 +23,8 @@ export function EmptyState({
         </div>
       )}
       <h3 className="text-lg font-semibold">{title}</h3>
-      {description && (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      )}
+      {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
-  )
+  );
 }

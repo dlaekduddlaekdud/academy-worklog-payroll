@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   LayoutDashboard,
@@ -13,23 +13,17 @@ import {
   LogOut,
   Shield,
   UserCircle,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import { cn } from "@/lib/utils"
-import type { Role } from "@/types"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import type { Role } from "@/types";
 
 interface NavItem {
-  label: string
-  href: string
-  icon: React.ReactNode
+  label: string;
+  href: string;
+  icon: React.ReactNode;
 }
 
 const WORKER_NAV: NavItem[] = [
@@ -37,26 +31,30 @@ const WORKER_NAV: NavItem[] = [
   { label: "근무 기록", href: "/worker/work-logs", icon: <ClipboardList className="h-4 w-4" /> },
   { label: "급여 확인", href: "/worker/payroll", icon: <CreditCard className="h-4 w-4" /> },
   { label: "마이페이지", href: "/worker/mypage", icon: <UserCircle className="h-4 w-4" /> },
-]
+];
 
 const ADMIN_NAV: NavItem[] = [
   { label: "대시보드", href: "/admin/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: "근무자 관리", href: "/admin/workers", icon: <Users className="h-4 w-4" /> },
-  { label: "근무 기록 관리", href: "/admin/work-logs", icon: <ClipboardList className="h-4 w-4" /> },
+  {
+    label: "근무 기록 관리",
+    href: "/admin/work-logs",
+    icon: <ClipboardList className="h-4 w-4" />,
+  },
   { label: "급여 정산", href: "/admin/payroll", icon: <CreditCard className="h-4 w-4" /> },
-]
+];
 
 interface MobileNavProps {
-  role: Role
-  userName: string
-  isAdmin?: boolean
-  onLogout: () => void
+  role: Role;
+  userName: string;
+  isAdmin?: boolean;
+  onLogout: () => void;
 }
 
 export function MobileNav({ role, userName, isAdmin = false, onLogout }: MobileNavProps) {
-  const pathname = usePathname()
-  const [open, setOpen] = useState(false)
-  const navItems = role === "admin" ? ADMIN_NAV : WORKER_NAV
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const navItems = role === "admin" ? ADMIN_NAV : WORKER_NAV;
 
   return (
     <div className="flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
@@ -105,7 +103,7 @@ export function MobileNav({ role, userName, isAdmin = false, onLogout }: MobileN
             {/* 네비게이션 */}
             <nav className="mt-4 flex-1 space-y-1">
               {navItems.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                 return (
                   <Link
                     key={item.href}
@@ -121,7 +119,7 @@ export function MobileNav({ role, userName, isAdmin = false, onLogout }: MobileN
                     {item.icon}
                     {item.label}
                   </Link>
-                )
+                );
               })}
             </nav>
 
@@ -130,7 +128,10 @@ export function MobileNav({ role, userName, isAdmin = false, onLogout }: MobileN
               <Button
                 variant="outline"
                 className="w-full gap-2"
-                onClick={() => { setOpen(false); onLogout() }}
+                onClick={() => {
+                  setOpen(false);
+                  onLogout();
+                }}
               >
                 <LogOut className="h-4 w-4" />
                 로그아웃
@@ -140,5 +141,5 @@ export function MobileNav({ role, userName, isAdmin = false, onLogout }: MobileN
         </Sheet>
       </div>
     </div>
-  )
+  );
 }

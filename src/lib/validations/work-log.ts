@@ -26,18 +26,12 @@ export const workLogFormSchema = z
     roleType: z.enum(["assistant", "coaching"], {
       error: "역할을 선택해주세요",
     }),
-    memo: z
-      .string()
-      .max(200, "메모는 200자 이내로 작성해주세요")
-      .optional(),
+    memo: z.string().max(200, "메모는 200자 이내로 작성해주세요").optional(),
   })
   // endTime이 startTime보다 이후여야 함
-  .refine(
-    (data) => timeToMinutes(data.endTime) > timeToMinutes(data.startTime),
-    {
-      message: "종료 시간은 시작 시간 이후여야 합니다",
-      path: ["endTime"],
-    }
-  );
+  .refine((data) => timeToMinutes(data.endTime) > timeToMinutes(data.startTime), {
+    message: "종료 시간은 시작 시간 이후여야 합니다",
+    path: ["endTime"],
+  });
 
 export type WorkLogFormValues = z.infer<typeof workLogFormSchema>;

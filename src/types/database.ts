@@ -173,28 +173,20 @@ export interface Database {
         };
         Returns: undefined;
       };
-    };    Enums: Record<string, never>;
+    };
+    Enums: Record<string, never>;
   };
 }
 
 // 테이블별 Row 타입 단축 별칭 — 서비스 레이어에서 편리하게 사용
-export type ProfileRow =
-  Database["public"]["Tables"]["profiles"]["Row"];
-export type HourlyRateRow =
-  Database["public"]["Tables"]["hourly_rates"]["Row"];
-export type WorkLogRow =
-  Database["public"]["Tables"]["work_logs"]["Row"];
-export type PayrollSummaryRow =
-  Database["public"]["Tables"]["payroll_summaries"]["Row"];
+export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+export type HourlyRateRow = Database["public"]["Tables"]["hourly_rates"]["Row"];
+export type WorkLogRow = Database["public"]["Tables"]["work_logs"]["Row"];
+export type PayrollSummaryRow = Database["public"]["Tables"]["payroll_summaries"]["Row"];
 
 // Insert/Update 타입 단축 별칭
-export type WorkLogInsert =
-  Database["public"]["Tables"]["work_logs"]["Insert"];
-export type WorkLogUpdate =
-  Database["public"]["Tables"]["work_logs"]["Update"];
-export type PayrollSummaryInsert =
-  Database["public"]["Tables"]["payroll_summaries"]["Insert"];
-export type PayrollSummaryUpdate =
-  Database["public"]["Tables"]["payroll_summaries"]["Update"];
-export type HourlyRateInsert =
-  Database["public"]["Tables"]["hourly_rates"]["Insert"];
+export type WorkLogInsert = Database["public"]["Tables"]["work_logs"]["Insert"];
+export type WorkLogUpdate = Database["public"]["Tables"]["work_logs"]["Update"];
+export type PayrollSummaryInsert = Database["public"]["Tables"]["payroll_summaries"]["Insert"];
+export type PayrollSummaryUpdate = Database["public"]["Tables"]["payroll_summaries"]["Update"];
+export type HourlyRateInsert = Database["public"]["Tables"]["hourly_rates"]["Insert"];

@@ -1,5 +1,5 @@
-import Link from "next/link"
-import { FileQuestion } from "lucide-react"
+import Link from "next/link";
+import { FileQuestion } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -9,9 +9,7 @@ export default function NotFound() {
       </div>
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">페이지를 찾을 수 없습니다</h1>
-        <p className="text-muted-foreground">
-          요청하신 페이지가 존재하지 않거나 이동되었습니다.
-        </p>
+        <p className="text-muted-foreground">요청하신 페이지가 존재하지 않거나 이동되었습니다.</p>
       </div>
       <Link
         href="/"
@@ -20,5 +18,5 @@ export default function NotFound() {
         홈으로 돌아가기
       </Link>
     </div>
-  )
+  );
 }

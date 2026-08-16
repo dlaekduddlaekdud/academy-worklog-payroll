@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getPayrollOverviews } from "@/lib/services/payroll";
-import {
-  generatePayrollCsv,
-  generatePayrollCsvFilename,
-} from "@/lib/utils/csv-generator";
+import { generatePayrollCsv, generatePayrollCsvFilename } from "@/lib/utils/csv-generator";
 
 // GET /api/payroll/csv?year=2026&month=3
 export async function GET(request: Request) {
@@ -25,10 +22,7 @@ export async function GET(request: Request) {
     .single();
 
   if (profile?.role !== "admin") {
-    return NextResponse.json(
-      { error: "관리자 권한이 필요합니다." },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: "관리자 권한이 필요합니다." }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);
