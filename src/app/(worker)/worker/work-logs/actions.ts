@@ -1,13 +1,11 @@
 "use server";
+import { getMonthRange } from "@/lib/utils/date-range";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getEffectiveHourlyRate } from "@/lib/services/hourly-rate";
-import {
-  calculateDurationHours,
-  calculatePay,
-} from "@/lib/utils/pay-calculator";
+import { calculateDurationHours, calculatePay } from "@/lib/utils/pay-calculator";
 import type { WorkLogFormValues } from "@/lib/validations/work-log";
 import type { WorkLog, WorkLogFilter, WorkLogMonthlySummary, WorkLogRow } from "@/types";
 
@@ -80,9 +78,7 @@ async function assertNotFinalized(
 }
 
 // 근무 기록 생성
-export async function createWorkLog(
-  data: WorkLogFormValues
-): Promise<ActionResult> {
+export async function createWorkLog(data: WorkLogFormValues): Promise<ActionResult> {
   try {
     const supabase = await createClient();
     const {
@@ -96,12 +92,7 @@ export async function createWorkLog(
     await assertNotFinalized(supabase, userId, data.workDate);
 
     // 유효 시급 조회
-    const rate = await getEffectiveHourlyRate(
-      supabase,
-      userId,
-      data.roleType,
-      data.workDate
-    );
+    const rate = await getEffectiveHourlyRate(supabase, userId, data.roleType, data.workDate);
     if (rate === null) {
       return {
         success: false,
@@ -132,17 +123,13 @@ export async function createWorkLog(
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
 
 // 근무 기록 수정 (pending/rejected만 가능, 수정 시 pending으로 복귀)
-export async function updateWorkLog(
-  id: string,
-  data: WorkLogFormValues
-): Promise<ActionResult> {
+export async function updateWorkLog(id: string, data: WorkLogFormValues): Promise<ActionResult> {
   try {
     const supabase = await createClient();
     const {
@@ -179,12 +166,7 @@ export async function updateWorkLog(
     await assertNotFinalized(supabase, userId, data.workDate);
 
     // 시급 재계산 (변경된 날짜/역할 기준)
-    const rate = await getEffectiveHourlyRate(
-      supabase,
-      userId,
-      data.roleType,
-      data.workDate
-    );
+    const rate = await getEffectiveHourlyRate(supabase, userId, data.roleType, data.workDate);
     if (rate === null) {
       return {
         success: false,
@@ -231,12 +213,10 @@ export async function updateWorkLog(
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
-
 
 // 근무자 본인의 근무 기록 목록 조회
 export async function getMyWorkLogs(filter: WorkLogFilter): Promise<WorkLog[]> {
@@ -254,9 +234,7 @@ export async function getMyWorkLogs(filter: WorkLogFilter): Promise<WorkLog[]> {
     .order("start_time", { ascending: false });
 
   if (filter.year && filter.month) {
-    const startDate = `${filter.year}-${String(filter.month).padStart(2, "0")}-01`;
-    const lastDay = new Date(filter.year, filter.month, 0).getDate();
-    const endDate = `${filter.year}-${String(filter.month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    const { startDate, endDate } = getMonthRange(filter.year, filter.month);
 
     query = query.gte("work_date", startDate).lte("work_date", endDate);
   }
@@ -322,8 +300,7 @@ export async function deleteWorkLog(id: string): Promise<ActionResult> {
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
@@ -339,10 +316,7 @@ export async function getMyMonthlySummary(
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const lastDay = new Date(year, month, 0).getDate();
-  const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-
+  const { startDate, endDate } = getMonthRange(year, month);
 
   const { data, error } = await supabase
     .from("work_logs")
@@ -369,12 +343,7 @@ export async function getMyMonthlySummary(
     pendingCount: data.filter((l) => l.status === "pending").length,
     rejectedCount: data.filter((l) => l.status === "rejected").length,
     totalDurationHours:
-      Math.round(
-        approved.reduce((sum, l) => sum + l.duration_hours, 0) * 100
-      ) / 100,
-    totalCalculatedPay: approved.reduce(
-      (sum, l) => sum + l.calculated_pay,
-      0
-    ),
+      Math.round(approved.reduce((sum, l) => sum + l.duration_hours, 0) * 100) / 100,
+    totalCalculatedPay: approved.reduce((sum, l) => sum + l.calculated_pay, 0),
   };
 }

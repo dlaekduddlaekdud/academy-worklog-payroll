@@ -1,4 +1,5 @@
 "use server";
+import { getMonthRange } from "@/lib/utils/date-range";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -46,9 +47,7 @@ function toWorkLog(row: {
 }
 
 // 관리자 권한 확인 + user_id 반환
-async function getAdminUserId(
-  supabase: Awaited<ReturnType<typeof createClient>>
-): Promise<string> {
+async function getAdminUserId(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -106,9 +105,7 @@ export async function getAllWorkLogs(filter: WorkLogFilter): Promise<WorkLog[]> 
   }
 
   if (filter.year && filter.month) {
-    const startDate = `${filter.year}-${String(filter.month).padStart(2, "0")}-01`;
-    const lastDay = new Date(filter.year, filter.month, 0).getDate();
-    const endDate = `${filter.year}-${String(filter.month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    const { startDate, endDate } = getMonthRange(filter.year, filter.month);
     query = query.gte("work_date", startDate).lte("work_date", endDate);
   }
 
@@ -158,16 +155,13 @@ export async function approveWorkLog(id: string): Promise<ActionResult> {
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
 
 // 일괄 승인
-export async function bulkApproveWorkLogs(
-  ids: string[]
-): Promise<ActionResult> {
+export async function bulkApproveWorkLogs(ids: string[]): Promise<ActionResult> {
   try {
     const supabase = await createClient();
     const adminId = await getAdminUserId(supabase);
@@ -190,17 +184,13 @@ export async function bulkApproveWorkLogs(
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
 
 // 반려 (pending → rejected), reason 필수
-export async function rejectWorkLog(
-  id: string,
-  reason: string
-): Promise<ActionResult> {
+export async function rejectWorkLog(id: string, reason: string): Promise<ActionResult> {
   try {
     if (!reason.trim()) {
       return { success: false, error: "반려 사유를 입력해주세요." };
@@ -240,8 +230,7 @@ export async function rejectWorkLog(
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }
@@ -286,8 +275,7 @@ export async function undoApproveWorkLog(id: string): Promise<ActionResult> {
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
 }

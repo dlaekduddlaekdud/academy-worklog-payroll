@@ -1,9 +1,10 @@
-import Link from "next/link"
-import { redirect } from "next/navigation"
-import { Users, Clock, DollarSign, AlertCircle } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { buttonVariants } from "@/components/ui/button-variants"
-import { cn } from "@/lib/utils"
+import { getMonthRange } from "@/lib/utils/date-range";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Users, Clock, DollarSign, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -11,39 +12,34 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { PageHeader } from "@/components/common/PageHeader"
-import { createClient } from "@/lib/supabase/server"
+} from "@/components/ui/table";
+import { PageHeader } from "@/components/common/PageHeader";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminDashboardPage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect("/login")
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth() + 1
-  const startDate = `${year}-${String(month).padStart(2, "0")}-01`
-  const lastDay = new Date(year, month, 0).getDate()
-  const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const { startDate, endDate } = getMonthRange(year, month);
 
   // 이번 달 근무 기록 집계
   const { data: thisMonthLogs } = await supabase
     .from("work_logs")
     .select("worker_id, status, duration_hours, calculated_pay")
     .gte("work_date", startDate)
-    .lte("work_date", endDate)
+    .lte("work_date", endDate);
 
-  const logs = thisMonthLogs ?? []
-  const pendingLogs = logs.filter((l) => l.status === "pending")
-  const approved = logs.filter((l) => l.status === "approved")
-  const totalHours =
-    Math.round(
-      approved.reduce((sum, l) => sum + l.duration_hours, 0) * 100
-    ) / 100
-  const totalPay = approved.reduce((sum, l) => sum + l.calculated_pay, 0)
+  const logs = thisMonthLogs ?? [];
+  const pendingLogs = logs.filter((l) => l.status === "pending");
+  const approved = logs.filter((l) => l.status === "approved");
+  const totalHours = Math.round(approved.reduce((sum, l) => sum + l.duration_hours, 0) * 100) / 100;
+  const totalPay = approved.reduce((sum, l) => sum + l.calculated_pay, 0);
 
   // 활성 근무자 목록
   const { data: profilesData } = await supabase
@@ -51,30 +47,27 @@ export default async function AdminDashboardPage() {
     .select("user_id, name, email")
     .eq("role", "worker")
     .eq("is_active", true)
-    .order("name", { ascending: true })
+    .order("name", { ascending: true });
 
-  const workers = profilesData ?? []
+  const workers = profilesData ?? [];
 
   // 근무자별 이번 달 근무 집계
   const workerStats = workers.map((worker) => {
-    const workerLogs = logs.filter((l) => l.worker_id === worker.user_id)
+    const workerLogs = logs.filter((l) => l.worker_id === worker.user_id);
     const hours =
       Math.round(
         workerLogs
           .filter((l) => l.status === "approved")
           .reduce((sum, l) => sum + l.duration_hours, 0) * 100
-      ) / 100
-    const pending = workerLogs.filter((l) => l.status === "pending").length
-    const total = workerLogs.length
-    return { ...worker, hours, pending, total }
-  })
+      ) / 100;
+    const pending = workerLogs.filter((l) => l.status === "pending").length;
+    const total = workerLogs.length;
+    return { ...worker, hours, pending, total };
+  });
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="관리자 대시보드"
-        description={`${year}년 ${month}월 전체 현황`}
-      />
+      <PageHeader title="관리자 대시보드" description={`${year}년 ${month}월 전체 현황`} />
 
       {/* 요약 카드 */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -115,14 +108,19 @@ export default async function AdminDashboardPage() {
         <Card className={pendingLogs.length > 0 ? "border-yellow-300 bg-yellow-50" : ""}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">승인 대기</CardTitle>
-            <AlertCircle className={`h-4 w-4 ${pendingLogs.length > 0 ? "text-yellow-600" : "text-muted-foreground"}`} />
+            <AlertCircle
+              className={`h-4 w-4 ${pendingLogs.length > 0 ? "text-yellow-600" : "text-muted-foreground"}`}
+            />
           </CardHeader>
           <CardContent>
             <p className={`text-2xl font-bold ${pendingLogs.length > 0 ? "text-yellow-700" : ""}`}>
               {pendingLogs.length}건
             </p>
             {pendingLogs.length > 0 ? (
-              <Link href="/admin/work-logs" className="mt-1 text-xs text-yellow-700 underline underline-offset-2 hover:text-yellow-800">
+              <Link
+                href="/admin/work-logs"
+                className="mt-1 text-xs text-yellow-700 underline underline-offset-2 hover:text-yellow-800"
+              >
                 검토하러 가기 →
               </Link>
             ) : (
@@ -185,5 +183,5 @@ export default async function AdminDashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
