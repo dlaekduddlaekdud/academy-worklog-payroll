@@ -1,3 +1,4 @@
+import { getMonthRange } from "@/lib/utils/date-range";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, PayrollSummaryRow } from "@/types/database";
 import type { PayrollSummary, PayrollOverview } from "@/types";
@@ -30,9 +31,7 @@ export async function upsertPayrollSummary(
   month: number
 ): Promise<PayrollSummary> {
   // 해당 월의 approved 근무 기록 집계
-  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const lastDay = new Date(year, month, 0).getDate();
-  const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  const { startDate, endDate } = getMonthRange(year, month);
 
   const { data: logs, error: logsError } = await supabase
     .from("work_logs")
@@ -45,15 +44,10 @@ export async function upsertPayrollSummary(
   if (logsError) throw new Error("근무 기록 조회 실패");
 
   const totalHours =
-    Math.round(
-      (logs ?? []).reduce((sum, log) => sum + log.duration_hours, 0) * 100
-    ) / 100;
-  const totalPay = (logs ?? []).reduce(
-    (sum, log) => sum + log.calculated_pay,
-    0
-  );
+    Math.round((logs ?? []).reduce((sum, log) => sum + log.duration_hours, 0) * 100) / 100;
+  const totalPay = (logs ?? []).reduce((sum, log) => sum + log.calculated_pay, 0);
 
-// UPSERT — 집계값만 갱신한다.
+  // UPSERT — 집계값만 갱신한다.
   // status를 함께 넣으면 finalized 요약이 draft로 뒤집히면서
   // finalized_at/finalized_by만 남는 모순 데이터가 생긴다.
   // 신규 행의 status는 DB 기본값(draft), 확정은 finalizePayroll이 전담한다.
@@ -84,9 +78,7 @@ export async function getPayrollOverviews(
   month: number
 ): Promise<PayrollOverview[]> {
   // 1. 해당 월에 work_log가 있는 근무자 목록 조회
-  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const lastDay = new Date(year, month, 0).getDate();
-  const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  const { startDate, endDate } = getMonthRange(year, month);
 
   const { data: workerIds, error: workerError } = await supabase
     .from("work_logs")
@@ -97,9 +89,7 @@ export async function getPayrollOverviews(
   if (workerError) throw new Error("근무 기록 조회 실패");
 
   const uniqueWorkerIds = [
-    ...new Set(
-      ((workerIds ?? []) as { worker_id: string }[]).map((r) => r.worker_id)
-    ),
+    ...new Set(((workerIds ?? []) as { worker_id: string }[]).map((r) => r.worker_id)),
   ];
   if (uniqueWorkerIds.length === 0) return [];
 
@@ -139,21 +129,22 @@ export async function getPayrollOverviews(
 
   if (logsError) throw new Error("근무 기록 집계 실패");
 
-  type LogEntry = { worker_id: string; status: string; duration_hours: number; calculated_pay: number };
+  type LogEntry = {
+    worker_id: string;
+    status: string;
+    duration_hours: number;
+    calculated_pay: number;
+  };
 
   // 5. 근무자별 집계
   return uniqueWorkerIds.map((workerId) => {
-    const workerLogs = ((allLogs ?? []) as LogEntry[]).filter(
-      (l) => l.worker_id === workerId
-    );
+    const workerLogs = ((allLogs ?? []) as LogEntry[]).filter((l) => l.worker_id === workerId);
     const approvedLogs = workerLogs.filter((l) => l.status === "approved");
     const pendingLogs = workerLogs.filter((l) => l.status === "pending");
     const summary = summaryMap.get(workerId);
 
     const totalHours =
-      Math.round(
-        approvedLogs.reduce((sum, l) => sum + l.duration_hours, 0) * 100
-      ) / 100;
+      Math.round(approvedLogs.reduce((sum, l) => sum + l.duration_hours, 0) * 100) / 100;
     const totalPay = approvedLogs.reduce((sum, l) => sum + l.calculated_pay, 0);
 
     return {
