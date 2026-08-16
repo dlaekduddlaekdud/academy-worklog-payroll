@@ -40,7 +40,9 @@ export async function createWorkerAction(data: CreateWorkerValues) {
   });
 
   if (createError) {
-    if (createError.message.includes("already registered")) {
+    console.error("[createWorkerAction] createUser 실패:", createError);
+    // 문자열이 아니라 code로 판별한다. Supabase의 메시지 문구는 버전에 따라 바뀐다.
+    if (createError.code === "email_exists") {
       throw new Error("이미 등록된 이메일입니다.");
     }
     throw new Error("계정 생성에 실패했습니다. 다시 시도해주세요.");
@@ -56,6 +58,7 @@ export async function createWorkerAction(data: CreateWorkerValues) {
   });
 
   if (profileError) {
+    console.error("[createWorkerAction] profiles upsert 실패:", profileError);
     throw new Error("프로필 생성에 실패했습니다.");
   }
 
