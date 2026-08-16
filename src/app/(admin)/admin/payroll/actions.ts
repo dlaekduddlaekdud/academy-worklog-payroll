@@ -1,4 +1,5 @@
 "use server";
+import { rethrowIfRedirect } from "@/lib/utils/redirect-error";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -55,6 +56,7 @@ export async function calculatePayroll(
     revalidatePath("/admin/payroll");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -88,6 +90,7 @@ export async function finalizePayroll(
     revalidatePath("/worker/payroll");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -141,6 +144,7 @@ export async function bulkFinalizePayroll(
 
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -174,6 +178,7 @@ export async function unfinalizePayroll(
     revalidatePath("/worker/payroll");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }

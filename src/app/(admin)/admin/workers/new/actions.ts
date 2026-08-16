@@ -1,4 +1,5 @@
 "use server";
+import { rethrowIfRedirect } from "@/lib/utils/redirect-error";
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

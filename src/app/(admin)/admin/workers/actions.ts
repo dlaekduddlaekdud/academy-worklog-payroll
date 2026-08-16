@@ -1,4 +1,5 @@
 "use server";
+import { rethrowIfRedirect } from "@/lib/utils/redirect-error";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -77,6 +78,7 @@ export async function createHourlyRate(data: HourlyRateFormValues): Promise<Acti
     revalidatePath(`/admin/workers/${data.workerId}/rates`);
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -107,6 +109,7 @@ export async function updateHourlyRate(
     revalidatePath(`/admin/workers/${workerId}/rates`);
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -130,6 +133,7 @@ export async function deleteHourlyRate(id: string, workerId: string): Promise<Ac
     revalidatePath(`/admin/workers/${workerId}/rates`);
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }

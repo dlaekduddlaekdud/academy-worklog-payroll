@@ -1,4 +1,5 @@
 "use server";
+import { rethrowIfRedirect } from "@/lib/utils/redirect-error";
 import { getMonthRange } from "@/lib/utils/date-range";
 
 import { redirect } from "next/navigation";
@@ -117,6 +118,7 @@ export async function approveWorkLog(id: string): Promise<ActionResult> {
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -146,6 +148,7 @@ export async function bulkApproveWorkLogs(ids: string[]): Promise<ActionResult> 
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -192,6 +195,7 @@ export async function rejectWorkLog(id: string, reason: string): Promise<ActionR
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
@@ -237,6 +241,7 @@ export async function undoApproveWorkLog(id: string): Promise<ActionResult> {
     revalidatePath("/worker/dashboard");
     return { success: true };
   } catch (e) {
+    rethrowIfRedirect(e);
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { success: false, error: message };
   }
