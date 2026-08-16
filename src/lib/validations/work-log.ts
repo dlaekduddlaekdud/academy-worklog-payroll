@@ -1,13 +1,8 @@
 import { z } from "zod";
+import { timeToMinutes } from "@/lib/utils/pay-calculator";
 
 // HH:mm 형식 검증용 정규식
 const timeRegex = /^([0-1]\d|2[0-3]):([0-5]\d)$/;
-
-// 시간 문자열을 분 단위 숫자로 변환
-function timeToMinutes(time: string): number {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
-}
 
 export const workLogFormSchema = z
   .object({

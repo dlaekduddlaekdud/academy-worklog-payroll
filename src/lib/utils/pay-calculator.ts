@@ -1,5 +1,5 @@
 // "HH:mm" 형식 시간 문자열을 분 단위로 변환
-function timeToMinutes(time: string): number {
+export function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
 }
