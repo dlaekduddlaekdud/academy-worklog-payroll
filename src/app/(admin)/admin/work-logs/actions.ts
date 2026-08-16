@@ -205,7 +205,8 @@ export async function rejectWorkLog(id: string, reason: string): Promise<ActionR
 export async function undoApproveWorkLog(id: string): Promise<ActionResult> {
   try {
     const supabase = await createClient();
-    const adminId = await getAdminUserId(supabase);
+    // 반환값은 쓰지 않지만 관리자 권한 검사를 겸하므로 호출은 유지한다.
+    await getAdminUserId(supabase);
 
     const { data: workLog, error: fetchError } = await supabase
       .from("work_logs")
@@ -224,17 +225,23 @@ export async function undoApproveWorkLog(id: string): Promise<ActionResult> {
     // 확정 월 보호
     await assertNotFinalized(supabase, workLog.worker_id, workLog.work_date);
 
-    const { error } = await supabase
+    // 승인 취소는 심사 이전 상태로 되돌리는 것이므로 심사 흔적도 함께 지운다.
+    // reviewed_at을 남기면 "심사되지 않았는데 심사 시각은 있는" 모순이 생긴다.
+    const { data: updated, error } = await supabase
       .from("work_logs")
       .update({
         status: "pending",
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: adminId,
+        reviewed_at: null,
+        reviewed_by: null,
         rejection_reason: null,
       })
-      .eq("id", id);
+      .eq("id", id)
+      .select("id");
 
     if (error) return { success: false, error: "승인 취소에 실패했습니다." };
+    if (!updated || updated.length === 0) {
+      return { success: false, error: "권한이 없거나 이미 처리된 기록입니다." };
+    }
 
     revalidatePath("/admin/work-logs");
     revalidatePath("/worker/work-logs");

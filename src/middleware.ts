@@ -13,9 +13,15 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // 로그인 상태에서 /login 접근 시 근무자 대시보드로 (관리자 포함 모두 동일)
+  // 로그인 상태로 /login에 오면 역할에 맞는 대시보드로 보낸다.
   if (pathname === "/login" && user) {
-    return NextResponse.redirect(new URL("/worker/dashboard", request.url));
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+    const target = profile?.role === "admin" ? "/admin/dashboard" : "/worker/dashboard";
+    return NextResponse.redirect(new URL(target, request.url));
   }
 
   // 보호된 라우트는 로그인 필수
