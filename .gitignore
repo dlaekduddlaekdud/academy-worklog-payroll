@@ -50,3 +50,8 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /blob-report/
+
+# local agent config
+.claude/
+.mcp.json
+.playwright-mcp/
